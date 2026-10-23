@@ -19,9 +19,9 @@ repository = "https://github.com/mik1e80/moonbit-mDNS-DNS-SD-"
 
 license = "Apache-2.0"
 
-keywords = ["mdns", "dns-sd", "service-discovery"]
+keywords = [ "mdns", "dns-sd", "service-discovery" ]
 
-preferred_target = "wasm"
+preferred_target = "native"
 
 description = "MoonDiscover: DNS-SD browsing and resolution with a portable protocol core"
 

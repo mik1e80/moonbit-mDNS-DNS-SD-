@@ -1,0 +1,43 @@
+name: Lightweight checks
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: checks-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  portable-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install fixed MoonBit release
+        shell: bash
+        run: |
+          set -euo pipefail
+          version=$(python3 -c 'import json; print(json.load(open("toolchain.json"))["release"])')
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash -s -- "$version"
+          echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
+      - name: Resolve dependencies and check version
+        run: |
+          moon version --all
+          moonc -v | grep -F 'v0.10.17+d971670cd'
+          moon update
+      - name: Focused portable smoke tests
+        run: moon test dnssd_test.mbt src/model src/wire --target js --filter 'smoke:*'
+      - name: Compile Linux native transport probes
+        run: moon build cmd/native_spike cmd/transport_spike --target native
+  windows-native-build:
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install fixed project toolchain
+        shell: pwsh
+        run: ./scripts/bootstrap.ps1
+      - name: Compile Windows native transport probes
+        shell: pwsh
+        run: ./scripts/moon.ps1 build cmd/native_spike cmd/transport_spike --target native
