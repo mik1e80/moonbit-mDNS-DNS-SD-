@@ -21,7 +21,7 @@ pub(all) enum Section {
 }
 
 ///|
-pub struct Question {
+pub(all) struct Question {
   name : @model.DnsName
   rr_type : Int32
   rr_class : Int32
@@ -29,7 +29,7 @@ pub struct Question {
 }
 
 ///|
-pub struct Record {
+pub(all) struct Record {
   name : @model.DnsName
   rr_type : Int32
   rr_class : Int32
@@ -40,7 +40,7 @@ pub struct Record {
 }
 
 ///|
-pub struct Message {
+pub(all) struct Message {
   id : Int32
   flags : Int32
   questions : Array[Question]

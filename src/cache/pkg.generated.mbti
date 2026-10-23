@@ -1,0 +1,48 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "mik1e80/dnssd/src/cache"
+
+import {
+  "mik1e80/dnssd/src/model",
+  "mik1e80/dnssd/src/wire",
+}
+
+// Values
+pub fn same_data(@wire.RData, @wire.RData) -> Bool
+
+// Errors
+pub suberror CacheError {
+  InvalidTime
+  InvalidScope
+  CapacityExceeded
+}
+
+// Types and methods
+pub struct CachedRecord {
+  scope : String
+  record : @wire.Record
+  received_at : Int64
+  expires_at : Int64
+  original_ttl_ms : Int64
+}
+
+type Entry
+
+pub struct RecordCache {
+  // private fields
+}
+pub fn RecordCache::advance(Self, Int64) -> Array[Removal] raise CacheError
+pub fn RecordCache::ingest(Self, String, @wire.Message, Int64) -> Array[Removal] raise CacheError
+pub fn RecordCache::len(Self) -> Int32
+pub fn RecordCache::new(capacity? : Int32) -> Self raise CacheError
+pub fn RecordCache::next_deadline(Self) -> Int64?
+pub fn RecordCache::records(Self, String, @model.DnsName, Int32) -> Array[CachedRecord]
+
+pub struct Removal {
+  scope : String
+  record : @wire.Record
+  reason : String
+}
+
+// Type aliases
+
+// Traits

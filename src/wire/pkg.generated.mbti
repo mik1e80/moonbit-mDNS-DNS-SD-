@@ -18,14 +18,14 @@ pub suberror WireError {
 }
 
 // Types and methods
-pub struct Message {
+pub(all) struct Message {
   id : Int32
   flags : Int32
   questions : Array[Question]
   records : Array[Record]
 }
 
-pub struct Question {
+pub(all) struct Question {
   name : @model.DnsName
   rr_type : Int32
   rr_class : Int32
@@ -41,7 +41,7 @@ pub(all) enum RData {
   Unknown(Bytes)
 }
 
-pub struct Record {
+pub(all) struct Record {
   name : @model.DnsName
   rr_type : Int32
   rr_class : Int32
