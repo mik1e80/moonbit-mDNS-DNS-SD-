@@ -2,6 +2,7 @@
 package "mik1e80/dnssd"
 
 import {
+  "mik1e80/dnssd/src/engine",
   "mik1e80/dnssd/src/model",
   "mik1e80/dnssd/src/wire",
 }
@@ -18,6 +19,12 @@ pub fn qm_query(@model.DnsName, Int32) -> Bytes raise @wire.WireError
 // Type aliases
 pub using @model {type DnsName}
 
+pub using @engine {type Engine}
+
+pub using @engine {type EngineError}
+
+pub using @engine {type Event}
+
 pub using @model {type InputError}
 
 pub using @wire {type Message}
@@ -29,6 +36,8 @@ pub using @wire {type RData}
 pub using @wire {type Record}
 
 pub using @wire {type Section}
+
+pub using @engine {type ServiceSnapshot}
 
 pub using @model {type TxtRecord}
 

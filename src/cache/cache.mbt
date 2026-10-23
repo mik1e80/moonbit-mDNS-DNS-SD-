@@ -90,6 +90,11 @@ pub fn RecordCache::len(self : RecordCache) -> Int32 {
 }
 
 ///|
+pub fn RecordCache::clear(self : RecordCache) -> Unit {
+  self.entries = []
+}
+
+///|
 pub fn RecordCache::advance(
   self : RecordCache,
   now : Int64,

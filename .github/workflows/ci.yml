@@ -27,7 +27,7 @@ jobs:
           moonc -v | grep -F 'v0.10.17+d971670cd'
           moon update
       - name: Focused portable smoke tests
-        run: moon test dnssd_test.mbt src/model src/wire --target js --filter 'smoke:*'
+        run: moon test dnssd_test.mbt src/model src/wire src/cache src/engine --target js --filter 'smoke:*'
       - name: Compile Linux native transport probes
         run: moon build cmd/native_spike cmd/transport_spike --target native
   windows-native-build:

@@ -31,6 +31,7 @@ pub struct RecordCache {
   // private fields
 }
 pub fn RecordCache::advance(Self, Int64) -> Array[Removal] raise CacheError
+pub fn RecordCache::clear(Self) -> Unit
 pub fn RecordCache::ingest(Self, String, @wire.Message, Int64) -> Array[Removal] raise CacheError
 pub fn RecordCache::len(Self) -> Int32
 pub fn RecordCache::new(capacity? : Int32) -> Self raise CacheError

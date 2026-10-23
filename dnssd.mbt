@@ -2,6 +2,14 @@
 pub using @model {type DnsName, type TxtRecord, type TxtValue, type InputError}
 
 ///|
+pub using @engine {
+  type Engine,
+  type Event,
+  type ServiceSnapshot,
+  type EngineError,
+}
+
+///|
 pub using @wire {
   type Message,
   type Question,

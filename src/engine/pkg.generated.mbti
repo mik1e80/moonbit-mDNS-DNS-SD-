@@ -1,0 +1,62 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "mik1e80/dnssd/src/engine"
+
+import {
+  "mik1e80/dnssd/src/model",
+  "mik1e80/dnssd/src/wire",
+}
+
+// Values
+pub fn valid_service_type(@model.DnsName) -> Bool
+
+// Errors
+pub suberror EngineError {
+  Closed
+  InvalidServiceType
+  ResourceLimit(String)
+  UnknownSubscription
+}
+
+// Types and methods
+pub struct Engine {
+  // private fields
+}
+pub fn Engine::advance(Self, Int64) -> Unit raise
+pub fn Engine::browse(Self, @model.DnsName, String, Int64) -> Int32 raise
+pub fn Engine::cancel(Self, Int32, Int64) -> Unit raise
+pub fn Engine::close(Self) -> Unit
+pub fn Engine::dropped_events(Self) -> Int64
+pub fn Engine::ingest(Self, Bytes, String, Int64) -> Unit raise
+pub fn Engine::ingest_message(Self, @wire.Message, String, Int64) -> Unit raise
+pub fn Engine::new(cache_capacity? : Int32, service_capacity? : Int32, event_capacity? : Int32) -> Self raise
+pub fn Engine::next_deadline(Self) -> Int64?
+pub fn Engine::poll_event(Self) -> Event?
+pub fn Engine::snapshots(Self) -> Array[ServiceSnapshot]
+
+pub(all) enum Event {
+  Seen(ServiceSnapshot)
+  Resolved(ServiceSnapshot)
+  Updated(ServiceSnapshot, String)
+  Unavailable(ServiceSnapshot, String)
+  Removed(ServiceSnapshot, String)
+  Diagnostic(String, String)
+}
+
+pub struct ServiceSnapshot {
+  scope : String
+  service_type : @model.DnsName
+  instance : @model.DnsName
+  target : @model.DnsName?
+  port : Int32?
+  txt : @model.TxtRecord?
+  addresses : Array[Bytes]
+  missing : Array[String]
+  complete : Bool
+  remaining_ttl_ms : Int64
+}
+
+type Subscription
+
+// Type aliases
+
+// Traits
