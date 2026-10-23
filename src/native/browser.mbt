@@ -8,12 +8,17 @@ pub struct Browser {
   priv origin : Int64
   priv mut last_interface_check : Int64
   priv mut closed : Bool
+  seed : UInt32
+  priv recording : Bool
+  priv captures : Array[CaptureFrame]
+  priv mut capture_lost : Int64
 }
 
 ///|
 pub fn Browser::open(
   interface_ipv4 : UInt32,
   seed~ : UInt32? = None,
+  record~ : Bool = false,
 ) -> Browser raise {
   let socket = MulticastSocket::open(interface_ipv4)
   errdefer socket.close()
@@ -42,6 +47,10 @@ pub fn Browser::open(
     origin,
     last_interface_check: 0,
     closed: false,
+    seed,
+    recording: record,
+    captures: [],
+    capture_lost: 0,
   }
 }
 
@@ -66,7 +75,10 @@ pub fn Browser::browse(
   service_type : @model.DnsName,
 ) -> Int32 raise {
   guard !self.closed else { raise SocketError("browser closed", 0) }
-  self.engine.browse(service_type, self.scope, self.elapsed())
+  let now = self.elapsed()
+  let id = self.engine.browse(service_type, self.scope, now)
+  self.capture_frame(BrowseFrame(now, service_type))
+  id
 }
 
 ///|
@@ -76,12 +88,17 @@ pub fn Browser::resolve(
   timeout_ms~ : Int32 = 5000,
 ) -> Int32 raise {
   guard !self.closed else { raise SocketError("browser closed", 0) }
-  self.engine.resolve(instance, self.scope, self.elapsed(), timeout_ms~)
+  let now = self.elapsed()
+  let id = self.engine.resolve(instance, self.scope, now, timeout_ms~)
+  self.capture_frame(ResolveFrame(now, instance, timeout_ms))
+  id
 }
 
 ///|
 pub fn Browser::cancel(self : Browser, id : Int32) -> Unit raise {
-  self.engine.cancel(id, self.elapsed())
+  let now = self.elapsed()
+  self.engine.cancel(id, now)
+  self.capture_frame(CancelFrame(now, id))
 }
 
 ///|
@@ -113,6 +130,7 @@ pub fn Browser::poll(
     self.last_interface_check = now
   }
   self.engine.advance(now)
+  self.capture_frame(AdvanceFrame(now))
   self.send_pending()
   let events : Array[@engine.Event] = []
   let mut wait = timeout_ms.min(50)
@@ -132,14 +150,20 @@ pub fn Browser::poll(
         if packet.bytes.length() >= 12 && (packet.bytes[2].to_int() & 0x80) == 0 {
           continue
         }
-        self.engine.ingest(packet.bytes, self.scope, self.elapsed()) catch {
-          error =>
+        let received_at = self.elapsed()
+        self.capture_frame(PacketFrame(received_at, packet))
+        self.engine.ingest(packet.bytes, self.scope, received_at) catch {
+          error => {
+            self.engine.advance(received_at)
             events.push(@engine.Diagnostic("packet_rejected", "\{error}"))
+          }
         }
       }
     }
   }
-  self.engine.advance(self.elapsed())
+  let after_receive = self.elapsed()
+  self.engine.advance(after_receive)
+  self.capture_frame(AdvanceFrame(after_receive))
   self.send_pending()
   while self.engine.poll_event() is Some(event) {
     events.push(event)
@@ -153,6 +177,7 @@ pub async fn Browser::run(
   self : Browser,
   duration_ms : Int32,
   on_event : async (@engine.Event) -> Unit,
+  on_tick~ : async () -> Unit = () => (),
 ) -> Unit {
   guard duration_ms > 0 && duration_ms <= 86400000 else {
     raise SocketError("duration outside 1..86400000ms", 0)
@@ -163,6 +188,7 @@ pub async fn Browser::run(
     for event in self.poll(timeout_ms=0) {
       on_event(event)
     }
+    on_tick()
     @async.sleep(10)
   }
 }
@@ -172,6 +198,11 @@ pub fn Browser::close(self : Browser) -> Unit {
   if self.closed {
     return
   }
+  let now = self.elapsed()
+  self.engine.advance(now) catch {
+    _ => ()
+  }
+  self.capture_frame(CloseFrame(now))
   self.socket.close()
   self.engine.close()
   self.closed = true

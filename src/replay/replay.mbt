@@ -7,11 +7,20 @@ pub suberror ReplayError {
 pub struct Replay {
   engine : @engine.Engine
   priv mut now_ms : Int64
+  priv seed : UInt32
+  priv mut started : Bool
+  priv mut configured : Bool
 }
 
 ///|
 pub fn Replay::new(seed~ : UInt32 = 1U) -> Replay raise {
-  { engine: @engine.Engine::new(seed~), now_ms: 0, }
+  {
+    engine: @engine.Engine::new(seed~),
+    now_ms: 0,
+    seed,
+    started: false,
+    configured: false,
+  }
 }
 
 ///|
@@ -49,6 +58,24 @@ pub fn Replay::step_line(self : Replay, line : String) -> Array[Json] raise {
   }
   let output : Array[Json] = []
   match kind {
+    "config" => {
+      guard !self.started &&
+        !self.configured &&
+        at == 0L &&
+        read_config_seed(object) == self.seed else {
+        raise InvalidCommand(
+          "config must be first, unique and match the replay seed",
+        )
+      }
+      self.configured = true
+      output.push(
+        Json::object({
+          "event": Json("configured"),
+          "seed": Json(self.seed),
+          "at_ms": Json(0),
+        }),
+      )
+    }
     "browse" => {
       let id = self.engine.browse(
         @model.DnsName::parse(text(object, "name")),
@@ -111,6 +138,9 @@ pub fn Replay::step_line(self : Replay, line : String) -> Array[Json] raise {
     _ => raise InvalidCommand("unknown kind: " + kind)
   }
   self.now_ms = at
+  if kind != "config" {
+    self.started = true
+  }
   while self.engine.poll_event() is Some(event) {
     let json = event_json(event)
     if json is Json::Object(fields) {
@@ -130,4 +160,33 @@ pub fn Replay::step_line(self : Replay, line : String) -> Array[Json] raise {
     )
   }
   output
+}
+
+///|
+fn read_config_seed(object : Map[String, Json]) -> UInt32 raise {
+  let kind = text(object, "kind")
+  let format : Int32 = @json.from_json(field(object, "format"))
+  guard kind == "config" && format == 1 else {
+    raise InvalidCommand("unsupported trace configuration/format")
+  }
+  let value : Double = @json.from_json(field(object, "seed"))
+  guard value >= 0.0 && value <= 4294967295.0 else {
+    raise InvalidCommand("seed outside UInt32 range")
+  }
+  let n = value.to_int64()
+  guard n.to_double() == value else {
+    raise InvalidCommand("fractional replay seed")
+  }
+  n.to_int().reinterpret_as_uint()
+}
+
+///|
+pub fn Replay::from_config(line : String) -> Replay raise {
+  guard line.length() <= 32768 else {
+    raise InvalidCommand("config line too long")
+  }
+  let object : Map[String, Json] = @json.from_json(
+    @json.parse(line, max_nesting_depth=16, reject_duplicate_keys=true),
+  )
+  Replay::new(seed=read_config_seed(object))
 }

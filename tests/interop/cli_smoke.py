@@ -26,6 +26,11 @@ def main():
     assert bad.returncode != 0 and json.loads(bad.stdout)["event"] == "error"
     assert run("--help").returncode == 0
     assert run("--version").stdout.strip() == "0.1.0-dev"
+    config = ROOT / ".tools/config-smoke.jsonl"
+    config.parent.mkdir(exist_ok=True)
+    config.write_text('{"kind":"config","format":1,"seed":4294967295,"at_ms":0}\n', encoding="utf-8")
+    configured = run("replay", "--file", str(config))
+    assert configured.returncode == 0 and json.loads(configured.stdout)["seed"] == 4294967295
     print(json.dumps({"deterministic_replay": True, "resolved_endpoint": True, "expiry_events": True, "invalid_args_exit": True, "help_version": True}))
 
 

@@ -25,6 +25,7 @@ pub struct Replay {
   engine : @engine.Engine
   // private fields
 }
+pub fn Replay::from_config(String) -> Self raise
 pub fn Replay::new(seed? : UInt32) -> Self raise
 pub fn Replay::step_line(Self, String) -> Array[Json] raise
 

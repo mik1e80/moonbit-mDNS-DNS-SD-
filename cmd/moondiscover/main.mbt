@@ -13,9 +13,13 @@ async fn usage() -> Unit {
 ///|
 fn options(args : Array[String]) -> Map[String, String] raise {
   let result : Map[String, String] = Map([])
-  let allowed = [
-    "--interface", "--service", "--instance", "--duration-ms", "--file", "--seed",
-  ]
+  let allowed = match args[1] {
+    "browse" => ["--interface", "--service", "--duration-ms", "--record"]
+    "resolve" => ["--interface", "--instance", "--duration-ms", "--record"]
+    "doctor" => ["--interface"]
+    "replay" => ["--file", "--seed"]
+    _ => []
+  }
   let mut i = 2
   while i < args.length() {
     let key = args[i]
@@ -39,7 +43,7 @@ fn required(options : Map[String, String], key : String) -> String raise {
 }
 
 ///|
-fn number(text : String, maximum : Int32) -> Int32 raise {
+fn decimal(text : String, maximum : Int64) -> Int64 raise {
   guard text.length() > 0 && text.length() <= 10 else {
     fail("invalid decimal integer")
   }
@@ -47,11 +51,14 @@ fn number(text : String, maximum : Int32) -> Int32 raise {
   for c in text {
     guard c >= '0' && c <= '9' else { fail("invalid decimal integer") }
     value = value * 10L + (c.to_int() - 48).to_int64()
-    guard value <= maximum.to_int64() else {
-      fail("integer exceeds option limit")
-    }
+    guard value <= maximum else { fail("integer exceeds option limit") }
   }
-  value.to_int()
+  value
+}
+
+///|
+fn number(text : String, maximum : Int32) -> Int32 raise {
+  decimal(text, maximum.to_int64()).to_int()
 }
 
 ///|
@@ -99,8 +106,27 @@ async fn run_command(args : Array[String]) -> Unit {
       }
       let data = @fs.read_file(path)
       let content = data.text()
-      let seed = number(options.get("--seed").unwrap_or("1"), 2147483647).reinterpret_as_uint()
-      let replay = @dnssd.Replay::new(seed~)
+      let mut first_line : String? = None
+      for line in content.split("\n") {
+        let text = line.trim().to_owned()
+        if text != "" {
+          first_line = Some(text)
+          break
+        }
+      }
+      let replay = match options.get("--seed") {
+        Some(text) =>
+          @dnssd.Replay::new(
+            seed=decimal(text, 4294967295L).to_int().reinterpret_as_uint(),
+          )
+        None =>
+          if first_line is Some(line) &&
+            @json.parse(line) is { "kind": "config", .. } {
+            @dnssd.Replay::from_config(line)
+          } else {
+            @dnssd.Replay::new(seed=1U)
+          }
+      }
       let mut count = 0
       for line in content.split("\n") {
         let line = line.trim().to_owned()
@@ -120,8 +146,30 @@ async fn run_command(args : Array[String]) -> Unit {
         3600000,
       )
       guard duration > 0 else { fail("duration must be positive") }
-      let browser = @native.Browser::open(interface_ipv4(options))
+      let record_path = options.get("--record")
+      let browser = @native.Browser::open(
+        interface_ipv4(options),
+        record=record_path is Some(_),
+      )
       defer browser.close()
+      let trace : Array[String] = []
+      let mut trace_size = 0
+      if record_path is Some(_) {
+        let config = browser.capture_config().stringify()
+        trace.push(config)
+        trace_size = config.length() + 1
+      }
+      fn take_captures() raise {
+        while browser.poll_capture() is Some(frame) {
+          let line = browser.capture_json(frame).stringify()
+          guard trace.length() < 10000 &&
+            trace_size + line.length() + 1 <= 8388608 else {
+            fail("recording exceeds 10000 frames or 8 MiB")
+          }
+          trace.push(line)
+          trace_size += line.length() + 1
+        }
+      }
       if args[1] == "browse" {
         for service in required(options, "--service").split(",") {
           let _ = browser.browse(@dnssd.DnsName::parse(service.to_owned()))
@@ -134,14 +182,34 @@ async fn run_command(args : Array[String]) -> Unit {
       }
       let mut seen = 0
       let mut resolved = 0
-      browser.run(duration, event => {
-        match event {
-          @dnssd.Event::Seen(_) => seen += 1
-          @dnssd.Event::Resolved(_) => resolved += 1
-          _ => ()
+      browser.run(
+        duration,
+        event => {
+          match event {
+            @dnssd.Event::Seen(_) => seen += 1
+            @dnssd.Event::Resolved(_) => resolved += 1
+            _ => ()
+          }
+          write_line(@dnssd.event_json(event).stringify())
+        },
+        on_tick=() => take_captures(),
+      )
+      take_captures()
+      if record_path is Some(path) {
+        guard browser.dropped_captures() == 0L else {
+          fail(
+            "capture queue overflowed; refusing to save an incomplete recording",
+          )
         }
-        write_line(@dnssd.event_json(event).stringify())
-      })
+        @fs.write_file(path, trace.join("\n") + "\n")
+        write_line(
+          Json::object({
+            "event": Json("recorded"),
+            "file": Json(path),
+            "frames": Json(trace.length()),
+          }).stringify(),
+        )
+      }
       while browser.poll_event() is Some(event) {
         write_line(@dnssd.event_json(event).stringify())
       }

@@ -26,18 +26,32 @@ pub struct Browser {
   scope : String
   interface_ipv4 : UInt32
   interface_index : Int32
+  seed : UInt32
   // private fields
 }
 pub fn Browser::browse(Self, @model.DnsName) -> Int32 raise
 pub fn Browser::cancel(Self, Int32) -> Unit raise
+pub fn Browser::capture_config(Self) -> Json
+pub fn Browser::capture_json(Self, CaptureFrame) -> Json
 pub fn Browser::close(Self) -> Unit
+pub fn Browser::dropped_captures(Self) -> Int64
 pub fn Browser::elapsed(Self) -> Int64
-pub fn Browser::open(UInt32, seed? : UInt32?) -> Self raise
+pub fn Browser::open(UInt32, seed? : UInt32?, record? : Bool) -> Self raise
 pub fn Browser::poll(Self, timeout_ms? : Int32) -> Array[@engine.Event] raise
+pub fn Browser::poll_capture(Self) -> CaptureFrame?
 pub fn Browser::poll_event(Self) -> @engine.Event?
 pub fn Browser::resolve(Self, @model.DnsName, timeout_ms? : Int32) -> Int32 raise
-pub async fn Browser::run(Self, Int32, async (@engine.Event) -> Unit) -> Unit
+pub async fn Browser::run(Self, Int32, async (@engine.Event) -> Unit, on_tick? : async () -> Unit) -> Unit
 pub fn Browser::snapshots(Self) -> Array[@engine.ServiceSnapshot]
+
+pub(all) enum CaptureFrame {
+  BrowseFrame(Int64, @model.DnsName)
+  ResolveFrame(Int64, @model.DnsName, Int32)
+  CancelFrame(Int64, Int32)
+  AdvanceFrame(Int64)
+  PacketFrame(Int64, Datagram)
+  CloseFrame(Int64)
+}
 
 pub struct Datagram {
   bytes : Bytes

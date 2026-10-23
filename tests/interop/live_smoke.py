@@ -59,6 +59,7 @@ def main():
     removed = threading.Event()
     started = time.monotonic()
     cli = binary("cmd/moondiscover/moondiscover")
+    trace_path = ROOT / (".tools/capture-" + token + ".jsonl")
 
     def info(phase):
         return ServiceInfo("_http._tcp.local.", token + "._http._tcp.local.",
@@ -71,7 +72,7 @@ def main():
         registered = info(b"one")
         zc.register_service(registered)
         browse = subprocess.Popen([str(cli), "browse", "--interface", args.interface,
-                                   "--service", "_http._tcp.local.", "--duration-ms", "10000"],
+                                   "--service", "_http._tcp.local.", "--duration-ms", "10000", "--record", str(trace_path)],
                                   stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         processes.append(browse)
 
@@ -107,6 +108,11 @@ def main():
         browse_stderr = browse.stderr.read()
         client_out, client_err = client.communicate(timeout=8)
         client_events = [json.loads(line) for line in client_out.splitlines() if line.startswith("{")]
+        replay_a = subprocess.run([str(cli), "replay", "--file", str(trace_path)], capture_output=True, text=True, timeout=8)
+        replay_b = subprocess.run([str(cli), "replay", "--file", str(trace_path)], capture_output=True, text=True, timeout=8)
+        replay_events = [json.loads(line) for line in replay_a.stdout.splitlines() if line.startswith("{")]
+        replay_own = [{k: v for k, v in e.items() if k != "at_ms"} for e in replay_events if e.get("service", {}).get("instance_label") == token]
+        live_own = [{k: v for k, v in e.items() if k != "observed_ms"} for e in timeline]
         doctor = subprocess.run([str(cli), "doctor", "--interface", args.interface], capture_output=True, text=True, timeout=4)
         cancel = subprocess.run([str(binary("tests/native_cancel/native_cancel")), args.interface], capture_output=True, text=True, timeout=4)
         git = ["git", "-c", "safe.directory=" + ROOT.as_posix()]
@@ -120,6 +126,9 @@ def main():
             "demo": token, "http_port": http.server_port,
             "cli_sha256": hashlib.sha256(cli.read_bytes()).hexdigest(),
             "timeline": timeline, "http_requests": requests, "http_client_events": client_events,
+            "trace_file": str(trace_path.relative_to(ROOT)),
+            "trace_sha256": hashlib.sha256(trace_path.read_bytes()).hexdigest() if trace_path.exists() else None,
+            "replay_service_events": replay_own,
             "exit_codes": {"browse": browse.returncode, "http_client": client.returncode, "doctor": doctor.returncode, "cancel": cancel.returncode},
             "stderr": {"browse": browse_stderr, "http_client": client_err, "doctor": doctor.stderr, "cancel": cancel.stderr},
             "doctor": doctor.stdout, "cancel": cancel.stdout,
@@ -130,6 +139,8 @@ def main():
                 "goodbye_removed_event": got_goodbye,
                 "all_processes_exit_zero": all(code == 0 for code in [browse.returncode, client.returncode, doctor.returncode, cancel.returncode]),
                 "async_cancellation_closed_browser": cancel.returncode == 0 and json.loads(cancel.stdout).get("cancelled_run_closed") is True,
+                "recorded_replay_deterministic": replay_a.returncode == replay_b.returncode == 0 and replay_events == [json.loads(line) for line in replay_b.stdout.splitlines() if line.startswith("{")],
+                "live_and_replay_service_events_match": bool(live_own) and live_own == replay_own,
             },
             "limits": ["same Windows host using an independent zeroconf process", "IPv4 QM multicast adapter; unicast intentionally excluded", "no second-device or Linux live-network evidence"],
         }
