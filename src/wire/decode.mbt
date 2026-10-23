@@ -102,8 +102,8 @@ pub fn decode_name(
         raise Malformed("truncated label")
       }
       size += length + 1
-      guard size <= 255 else {
-        raise Malformed("expanded name exceeds 255 octets")
+      guard size <= 256 else {
+        raise Malformed("expanded mDNS name exceeds 255 octets plus terminator")
       }
       labels.push(data[at + 1:at + 1 + length].to_owned())
       at += length + 1

@@ -6,6 +6,11 @@ import {
 }
 
 // Values
+pub fn address_text(Bytes) -> String raise InputError
+
+pub fn bytes_from_hex(String) -> Bytes raise InputError
+
+pub fn bytes_hex(Bytes) -> String
 
 // Errors
 pub suberror InputError {
@@ -22,6 +27,7 @@ pub fn DnsName::canonical_key(Self) -> Bytes
 pub fn DnsName::from_labels(Array[Bytes]) -> Self raise InputError
 pub fn DnsName::from_utf8_labels(Array[String]) -> Self raise InputError
 pub fn DnsName::labels(Self) -> Array[Bytes]
+pub fn DnsName::parse(String) -> Self raise InputError
 pub fn DnsName::same_name(Self, Self) -> Bool
 pub fn DnsName::to_presentation(Self) -> String
 #deprecated

@@ -4,13 +4,18 @@ package "mik1e80/dnssd"
 import {
   "mik1e80/dnssd/src/engine",
   "mik1e80/dnssd/src/model",
+  "mik1e80/dnssd/src/replay",
   "mik1e80/dnssd/src/wire",
 }
 
 // Values
 pub fn decode_packet(Bytes) -> @wire.Message raise @wire.WireError
 
+pub fn event_json(@engine.Event) -> Json
+
 pub fn qm_query(@model.DnsName, Int32) -> Bytes raise @wire.WireError
+
+pub fn snapshot_json(@engine.ServiceSnapshot) -> Json
 
 // Errors
 
@@ -34,6 +39,10 @@ pub using @wire {type Question}
 pub using @wire {type RData}
 
 pub using @wire {type Record}
+
+pub using @replay {type Replay}
+
+pub using @replay {type ReplayError}
 
 pub using @wire {type Section}
 

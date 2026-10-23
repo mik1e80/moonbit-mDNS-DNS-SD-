@@ -17,8 +17,8 @@ pub fn DnsName::from_labels(labels : Array[Bytes]) -> DnsName raise InputError {
       raise InvalidInput("DNS label must contain 1..63 octets")
     }
     size += label.length() + 1
-    guard size <= 255 else {
-      raise InvalidInput("DNS name exceeds 255 wire octets")
+    guard size <= 256 else {
+      raise InvalidInput("mDNS name exceeds 255 octets plus terminator")
     }
   }
   { labels: labels.copy(), }

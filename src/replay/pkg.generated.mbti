@@ -1,0 +1,28 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "mik1e80/dnssd/src/replay"
+
+import {
+  "mik1e80/dnssd/src/engine",
+}
+
+// Values
+pub fn event_json(@engine.Event) -> Json
+
+pub fn snapshot_json(@engine.ServiceSnapshot) -> Json
+
+// Errors
+pub suberror ReplayError {
+  InvalidCommand(String)
+}
+
+// Types and methods
+pub struct Replay {
+  engine : @engine.Engine
+  // private fields
+}
+pub fn Replay::new(seed? : UInt32) -> Self raise
+pub fn Replay::step_line(Self, String) -> Array[Json] raise
+
+// Type aliases
+
+// Traits
