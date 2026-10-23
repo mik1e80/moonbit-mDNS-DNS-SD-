@@ -1,0 +1,56 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "mik1e80/dnssd/src/model"
+
+import {
+  "moonbitlang/core/debug",
+}
+
+// Values
+
+// Errors
+pub suberror InputError {
+  InvalidInput(String)
+} derive(@debug.Debug)
+#deprecated
+pub fn InputError::to_repr(Self) -> @debug.Repr
+
+// Types and methods
+pub struct DnsName {
+  // private fields
+} derive(@debug.Debug)
+pub fn DnsName::canonical_key(Self) -> Bytes
+pub fn DnsName::from_labels(Array[Bytes]) -> Self raise InputError
+pub fn DnsName::from_utf8_labels(Array[String]) -> Self raise InputError
+pub fn DnsName::labels(Self) -> Array[Bytes]
+pub fn DnsName::same_name(Self, Self) -> Bool
+pub fn DnsName::to_presentation(Self) -> String
+#deprecated
+pub fn DnsName::to_repr(Self) -> @debug.Repr
+pub fn DnsName::to_wire(Self) -> Bytes
+
+pub struct TxtRecord {
+  // private fields
+} derive(@debug.Debug)
+pub fn TxtRecord::entries(Self) -> Array[Bytes]
+pub fn TxtRecord::from_entries(Array[Bytes]) -> Self raise InputError
+pub fn TxtRecord::from_wire(Bytes) -> Self raise InputError
+pub fn TxtRecord::lookup(Self, String) -> TxtValue raise InputError
+#deprecated
+pub fn TxtRecord::to_repr(Self) -> @debug.Repr
+pub fn TxtRecord::to_wire(Self) -> Bytes
+
+pub(all) enum TxtValue {
+  Missing
+  Flag
+  Value(Bytes)
+} derive(Eq, @debug.Debug)
+#deprecated
+pub fn TxtValue::equal(Self, Self) -> Bool
+#deprecated
+pub fn TxtValue::not_equal(Self, Self) -> Bool
+#deprecated
+pub fn TxtValue::to_repr(Self) -> @debug.Repr
+
+// Type aliases
+
+// Traits
