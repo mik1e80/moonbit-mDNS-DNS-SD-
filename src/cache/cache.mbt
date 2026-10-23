@@ -10,6 +10,7 @@ pub struct CachedRecord {
   scope : String
   record : @wire.Record
   received_at : Int64
+  received_sequence : Int64
   expires_at : Int64
   original_ttl_ms : Int64
 }
@@ -26,6 +27,7 @@ struct Entry {
   scope : String
   record : @wire.Record
   received_at : Int64
+  received_sequence : Int64
   expires_at : Int64
   original_ttl_ms : Int64
   reason : String
@@ -36,6 +38,7 @@ pub struct RecordCache {
   priv mut entries : Array[Entry]
   priv mut now_ms : Int64
   priv capacity : Int32
+  priv mut revision : Int64
 }
 
 ///|
@@ -43,7 +46,7 @@ pub fn RecordCache::new(
   capacity~ : Int32 = 2048,
 ) -> RecordCache raise CacheError {
   guard capacity > 0 && capacity <= 16384 else { raise CapacityExceeded }
-  { entries: [], now_ms: 0, capacity, }
+  { entries: [], now_ms: 0, capacity, revision: 0, }
 }
 
 ///|
@@ -133,10 +136,17 @@ pub fn RecordCache::ingest(
     entries: self.entries.copy(),
     now_ms: self.now_ms,
     capacity: self.capacity,
+    revision: self.revision,
   }
   let removed = next.advance(now)
   // Accept only complete mDNS success responses (QR, opcode=0, TC=0, rcode=0).
   if message.id == 0 && (message.flags & 0xfa0f) == 0x8000 {
+    guard message.questions.length() <= 256 &&
+      message.records.length() <= 256 - message.questions.length() &&
+      next.revision < 9223372036854775807L else {
+      raise CapacityExceeded
+    }
+    next.revision += 1
     let records = message.records.filter(supported)
     // Apply flush marks to the old set, then rescue every member in this packet.
     // Recently received members survive bursts split across multiple packets.
@@ -177,6 +187,7 @@ pub fn RecordCache::ingest(
           scope,
           record,
           received_at: now,
+          received_sequence: next.revision,
           expires_at: now + ttl,
           original_ttl_ms: ttl,
           reason: "ttl_expired",
@@ -194,6 +205,7 @@ pub fn RecordCache::ingest(
   }
   self.entries = next.entries
   self.now_ms = now
+  self.revision = next.revision
   removed
 }
 
@@ -212,6 +224,7 @@ pub fn RecordCache::records(
         scope: e.scope,
         record: e.record,
         received_at: e.received_at,
+        received_sequence: e.received_sequence,
         expires_at: e.expires_at,
         original_ttl_ms: e.original_ttl_ms,
       })

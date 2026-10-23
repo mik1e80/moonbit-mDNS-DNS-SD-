@@ -115,7 +115,9 @@ fn Engine::sync_queries(self : Engine) -> Unit {
         }
     }
     let records = self.cache.records(q.scope, q.name, q.rr_type)
-    let stamp = records.map(e => "\{e.received_at}:\{e.expires_at}").join(",")
+    let stamp = records
+      .map(e => "\{e.received_sequence}:\{e.received_at}:\{e.expires_at}")
+      .join(",")
     if job.stamp != stamp {
       job.stamp = stamp
       job.refresh_step = 0

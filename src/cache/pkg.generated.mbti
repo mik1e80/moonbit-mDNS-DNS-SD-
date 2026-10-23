@@ -26,6 +26,7 @@ pub struct CachedRecord {
   scope : String
   record : @wire.Record
   received_at : Int64
+  received_sequence : Int64
   expires_at : Int64
   original_ttl_ms : Int64
 }

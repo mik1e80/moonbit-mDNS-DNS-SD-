@@ -207,11 +207,11 @@ pub fn Engine::browse(
 fn newest(records : Array[@cache.CachedRecord]) -> Array[@cache.CachedRecord] {
   let mut time : Int64 = -1
   for entry in records {
-    if entry.received_at > time {
-      time = entry.received_at
+    if entry.received_sequence > time {
+      time = entry.received_sequence
     }
   }
-  records.filter(e => e.received_at == time)
+  records.filter(e => e.received_sequence == time)
 }
 
 ///|
