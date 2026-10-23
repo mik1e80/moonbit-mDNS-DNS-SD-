@@ -1,0 +1,103 @@
+///|
+pub suberror TransportError {
+  SocketError(String, Int64)
+}
+
+///|
+pub struct MulticastSocket {
+  priv mut handle : Int64
+}
+
+///|
+pub struct Datagram {
+  bytes : Bytes
+  source_ipv4 : UInt32
+  source_port : Int32
+  interface_index : Int32
+  destination_ipv4 : UInt32
+}
+
+///|
+extern "C" fn socket_open(ip : UInt32) -> Int64 = "moondiscover_socket_open"
+
+///|
+extern "C" fn socket_close(handle : Int64) -> Unit = "moondiscover_socket_close"
+
+///|
+#borrow(data)
+extern "C" fn socket_send(handle : Int64, data : Bytes, size : Int32) -> Int32 = "moondiscover_socket_send"
+
+///|
+#borrow(data, metadata)
+extern "C" fn socket_receive(
+  handle : Int64,
+  data : FixedArray[Byte],
+  size : Int32,
+  metadata : FixedArray[Int32],
+  timeout_ms : Int32,
+) -> Int32 = "moondiscover_socket_receive"
+
+///|
+/// IPv4 is in host integer order (10.0.0.1 = 0x0a000001).
+/// Explicitly close the socket, normally with defer. No automatic background work.
+pub fn MulticastSocket::open(
+  interface_ipv4 : UInt32,
+) -> MulticastSocket raise TransportError {
+  guard interface_ipv4 != 0 else {
+    raise SocketError("explicit IPv4 interface required", 0)
+  }
+  let handle = socket_open(interface_ipv4)
+  guard handle >= 0 else { raise SocketError("open/bind/join", -handle) }
+  { handle, }
+}
+
+///|
+pub fn MulticastSocket::close(self : MulticastSocket) -> Unit {
+  if self.handle >= 0 {
+    socket_close(self.handle)
+    self.handle = -1
+  }
+}
+
+///|
+pub fn MulticastSocket::send(
+  self : MulticastSocket,
+  data : Bytes,
+) -> Unit raise TransportError {
+  guard self.handle >= 0 else { raise SocketError("socket closed", 0) }
+  guard data.length() >= 12 && data.length() <= 9000 else {
+    raise SocketError("datagram length outside 12..9000", 0)
+  }
+  let n = socket_send(self.handle, data, data.length())
+  guard n == data.length() else { raise SocketError("send", n.to_int64()) }
+}
+
+///|
+/// Bounded synchronous poll for M0. Not an async event-loop integration.
+/// Receive metadata is required; timeout returns None, errors raise.
+pub fn MulticastSocket::receive(
+  self : MulticastSocket,
+  timeout_ms~ : Int32 = 50,
+) -> Datagram? raise TransportError {
+  guard self.handle >= 0 else { raise SocketError("socket closed", 0) }
+  guard timeout_ms >= 0 && timeout_ms <= 1000 else {
+    raise SocketError("timeout outside 0..1000ms", 0)
+  }
+  let data = FixedArray::make(9000, b'\x00')
+  let metadata = FixedArray::make(4, 0)
+  let n = socket_receive(self.handle, data, 9000, metadata, timeout_ms)
+  if n == 0 {
+    return None
+  }
+  guard n > 0 else { raise SocketError("receive", -n.to_int64()) }
+  guard metadata[2] > 0 else {
+    raise SocketError("missing ingress interface metadata", 0)
+  }
+  Some({
+    bytes: Bytes::makei(n, i => data[i]),
+    source_ipv4: metadata[0].reinterpret_as_uint(),
+    source_port: metadata[1],
+    interface_index: metadata[2],
+    destination_ipv4: metadata[3].reinterpret_as_uint(),
+  })
+}

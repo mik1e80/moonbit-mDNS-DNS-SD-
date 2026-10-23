@@ -1,0 +1,30 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "mik1e80/dnssd/src/native"
+
+// Values
+
+// Errors
+pub suberror TransportError {
+  SocketError(String, Int64)
+}
+
+// Types and methods
+pub struct Datagram {
+  bytes : Bytes
+  source_ipv4 : UInt32
+  source_port : Int32
+  interface_index : Int32
+  destination_ipv4 : UInt32
+}
+
+pub struct MulticastSocket {
+  // private fields
+}
+pub fn MulticastSocket::close(Self) -> Unit
+pub fn MulticastSocket::open(UInt32) -> Self raise TransportError
+pub fn MulticastSocket::receive(Self, timeout_ms? : Int32) -> Datagram? raise TransportError
+pub fn MulticastSocket::send(Self, Bytes) -> Unit raise TransportError
+
+// Type aliases
+
+// Traits
