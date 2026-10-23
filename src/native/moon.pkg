@@ -1,3 +1,10 @@
+import {
+  "mik1e80/dnssd/src/model",
+  "mik1e80/dnssd/src/engine",
+  "moonbitlang/core/env",
+  "moonbitlang/async",
+}
+
 supported_targets = "native"
 
 options(

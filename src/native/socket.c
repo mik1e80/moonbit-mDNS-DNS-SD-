@@ -1,13 +1,17 @@
 /* MoonDiscover's minimal IPv4 transport shim. Protocol logic lives in MoonBit. */
 #include <stdint.h>
 #include <string.h>
+#include <stdlib.h>
 #include <moonbit.h>
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <mswsock.h>
+#include <iphlpapi.h>
+#include <netioapi.h>
 #pragma comment(lib, "Ws2_32.lib")
+#pragma comment(lib, "Iphlpapi.lib")
 typedef SOCKET md_socket;
 #define MD_ERROR() WSAGetLastError()
 #define MD_CLOSE(s) closesocket(s)
@@ -21,12 +25,65 @@ typedef SOCKET md_socket;
 #include <errno.h>
 #include <poll.h>
 #include <fcntl.h>
+#include <ifaddrs.h>
+#include <net/if.h>
+#include <time.h>
 typedef int md_socket;
 #define MD_ERROR() errno
 #define MD_CLOSE(s) close(s)
 #define MD_INVALID (-1)
 #define MD_SET setsockopt
 #endif
+
+MOONBIT_FFI_EXPORT int64_t moondiscover_monotonic_ms(void) {
+#ifdef _WIN32
+  return (int64_t)GetTickCount64();
+#else
+  struct timespec t;
+  if (clock_gettime(CLOCK_MONOTONIC, &t) != 0) return -1;
+  return (int64_t)t.tv_sec * 1000 + t.tv_nsec / 1000000;
+#endif
+}
+
+MOONBIT_FFI_EXPORT int moondiscover_interface_index(uint32_t ip) {
+#ifdef _WIN32
+  ULONG size = 0;
+  DWORD status = GetIpAddrTable(NULL, &size, FALSE);
+  if (status != ERROR_INSUFFICIENT_BUFFER) return -(int)status;
+  MIB_IPADDRTABLE *table = (MIB_IPADDRTABLE *)malloc(size);
+  if (!table) return -ERROR_NOT_ENOUGH_MEMORY;
+  status = GetIpAddrTable(table, &size, FALSE);
+  int index = 0;
+  if (status == NO_ERROR) {
+    for (DWORD i = 0; i < table->dwNumEntries; i++) {
+      if (table->table[i].dwAddr == htonl(ip)) {
+        MIB_IF_ROW2 row;
+        memset(&row, 0, sizeof(row));
+        row.InterfaceIndex = table->table[i].dwIndex;
+        if (GetIfEntry2(&row) == NO_ERROR && row.OperStatus == IfOperStatusUp)
+          index = (int)row.InterfaceIndex;
+        break;
+      }
+    }
+  }
+  free(table);
+  return status == NO_ERROR ? index : -(int)status;
+#else
+  struct ifaddrs *addresses = NULL;
+  if (getifaddrs(&addresses) != 0) return -errno;
+  int index = 0;
+  for (struct ifaddrs *p = addresses; p; p = p->ifa_next) {
+    if (p->ifa_addr && p->ifa_addr->sa_family == AF_INET &&
+        (p->ifa_flags & IFF_UP) && (p->ifa_flags & IFF_RUNNING) &&
+        ((struct sockaddr_in *)p->ifa_addr)->sin_addr.s_addr == htonl(ip)) {
+      index = (int)if_nametoindex(p->ifa_name);
+      break;
+    }
+  }
+  freeifaddrs(addresses);
+  return index;
+#endif
+}
 
 MOONBIT_FFI_EXPORT int64_t moondiscover_socket_open(uint32_t ip) {
 #ifdef _WIN32

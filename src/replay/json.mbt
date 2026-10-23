@@ -22,7 +22,10 @@ pub fn snapshot_json(snapshot : @engine.ServiceSnapshot) -> Json {
     "instance": Json(snapshot.instance.to_presentation()),
     "instance_label": Json(label),
     "target": target,
-    "port": Json(snapshot.port),
+    "port": match snapshot.port {
+      Some(port) => Json(port)
+      None => Json::null()
+    },
     "txt_entries_hex": txt,
     "addresses": Json(addresses),
     "complete": Json(snapshot.complete),
@@ -54,6 +57,9 @@ pub fn event_json(event : @engine.Event) -> Json {
       Some(s) => snapshot_json(s)
       None => Json::null()
     },
-    "reason": Json(reason),
+    "reason": match reason {
+      Some(value) => Json(value)
+      None => Json::null()
+    },
   })
 }

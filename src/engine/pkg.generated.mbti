@@ -16,6 +16,11 @@ pub suberror EngineError {
   ResourceLimit(String)
   UnknownSubscription
 }
+#deprecated
+pub fn EngineError::output(Self, &Logger) -> Unit
+#deprecated
+pub fn EngineError::to_string(Self) -> String
+pub impl Show for EngineError
 
 // Types and methods
 pub struct Engine {

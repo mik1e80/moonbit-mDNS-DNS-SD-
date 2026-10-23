@@ -6,6 +6,7 @@ pub suberror TransportError {
 ///|
 pub struct MulticastSocket {
   priv mut handle : Int64
+  interface_index : Int32
 }
 
 ///|
@@ -19,6 +20,12 @@ pub struct Datagram {
 
 ///|
 extern "C" fn socket_open(ip : UInt32) -> Int64 = "moondiscover_socket_open"
+
+///|
+pub extern "C" fn interface_index(ip : UInt32) -> Int32 = "moondiscover_interface_index"
+
+///|
+pub extern "C" fn monotonic_ms() -> Int64 = "moondiscover_monotonic_ms"
 
 ///|
 extern "C" fn socket_close(handle : Int64) -> Unit = "moondiscover_socket_close"
@@ -46,9 +53,13 @@ pub fn MulticastSocket::open(
   guard interface_ipv4 != 0 else {
     raise SocketError("explicit IPv4 interface required", 0)
   }
+  let index = interface_index(interface_ipv4)
+  guard index > 0 else {
+    raise SocketError("interface unavailable or inactive", index.to_int64())
+  }
   let handle = socket_open(interface_ipv4)
   guard handle >= 0 else { raise SocketError("open/bind/join", -handle) }
-  { handle, }
+  { handle, interface_index: index, }
 }
 
 ///|

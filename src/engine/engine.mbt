@@ -341,7 +341,12 @@ fn Engine::reconcile(self : Engine, reason : String) -> Unit {
   }
   for old in self.services {
     if !current.any(s => same_identity(s, old)) {
-      self.emit(Removed(clone_snapshot(old), reason))
+      self.emit(
+        Removed(
+          { ..clone_snapshot(old), complete: false, remaining_ttl_ms: 0, },
+          reason,
+        ),
+      )
     }
   }
   for snapshot in current {

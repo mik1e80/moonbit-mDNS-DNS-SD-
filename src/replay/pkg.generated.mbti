@@ -14,6 +14,11 @@ pub fn snapshot_json(@engine.ServiceSnapshot) -> Json
 pub suberror ReplayError {
   InvalidCommand(String)
 }
+#deprecated
+pub fn ReplayError::output(Self, &Logger) -> Unit
+#deprecated
+pub fn ReplayError::to_string(Self) -> String
+pub impl Show for ReplayError
 
 // Types and methods
 pub struct Replay {

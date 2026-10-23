@@ -15,6 +15,11 @@ pub suberror CacheError {
   InvalidScope
   CapacityExceeded
 }
+#deprecated
+pub fn CacheError::output(Self, &Logger) -> Unit
+#deprecated
+pub fn CacheError::to_string(Self) -> String
+pub impl Show for CacheError
 
 // Types and methods
 pub struct CachedRecord {

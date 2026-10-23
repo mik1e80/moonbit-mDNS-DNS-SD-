@@ -18,6 +18,11 @@ pub fn query_with_answers(@model.DnsName, Int32, Array[Record]) -> Bytes raise W
 pub suberror WireError {
   Malformed(String)
 }
+#deprecated
+pub fn WireError::output(Self, &Logger) -> Unit
+#deprecated
+pub fn WireError::to_string(Self) -> String
+pub impl Show for WireError
 
 // Types and methods
 pub(all) struct Message {

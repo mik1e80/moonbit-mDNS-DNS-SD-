@@ -29,7 +29,7 @@ jobs:
       - name: Focused portable smoke tests
         run: moon test dnssd_test.mbt src/model src/wire src/cache src/engine src/replay --target js --filter 'smoke:*'
       - name: Compile Linux native transport probes
-        run: moon build cmd/native_spike cmd/transport_spike --target native
+        run: moon build cmd/native_spike cmd/transport_spike cmd/moondiscover examples/http_connect examples/watch_events tests/native_cancel --target native
   windows-native-build:
     runs-on: windows-latest
     timeout-minutes: 10
@@ -40,4 +40,7 @@ jobs:
         run: ./scripts/bootstrap.ps1
       - name: Compile Windows native transport probes
         shell: pwsh
-        run: ./scripts/moon.ps1 build cmd/native_spike cmd/transport_spike --target native
+        run: ./scripts/moon.ps1 build cmd/native_spike cmd/transport_spike cmd/moondiscover examples/http_connect examples/watch_events tests/native_cancel --target native
+      - name: Offline CLI smoke
+        shell: pwsh
+        run: python tests/interop/cli_smoke.py
