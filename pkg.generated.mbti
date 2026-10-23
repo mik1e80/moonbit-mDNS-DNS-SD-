@@ -1,0 +1,39 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "mik1e80/dnssd"
+
+import {
+  "mik1e80/dnssd/src/model",
+  "mik1e80/dnssd/src/wire",
+}
+
+// Values
+pub fn decode_packet(Bytes) -> @wire.Message raise @wire.WireError
+
+pub fn qm_query(@model.DnsName, Int32) -> Bytes raise @wire.WireError
+
+// Errors
+
+// Types and methods
+
+// Type aliases
+pub using @model {type DnsName}
+
+pub using @model {type InputError}
+
+pub using @wire {type Message}
+
+pub using @wire {type Question}
+
+pub using @wire {type RData}
+
+pub using @wire {type Record}
+
+pub using @wire {type Section}
+
+pub using @model {type TxtRecord}
+
+pub using @model {type TxtValue}
+
+pub using @wire {type WireError}
+
+// Traits

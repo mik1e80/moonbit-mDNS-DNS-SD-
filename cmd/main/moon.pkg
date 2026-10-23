@@ -1,5 +1,0 @@
-// import {
-//   "mik1e80/dnssd" @lib,
-// }
-
-pkgtype(kind: "executable")

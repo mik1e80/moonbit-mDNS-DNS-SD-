@@ -1,0 +1,4 @@
+import {
+  "mik1e80/dnssd/src/model",
+  "mik1e80/dnssd/src/wire",
+}
