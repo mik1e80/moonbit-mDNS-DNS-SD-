@@ -1,6 +1,11 @@
 ///|
-fn usage() -> Unit {
-  println(
+async fn write_line(text : String) -> Unit {
+  @stdio.stdout.write(text + "\n")
+}
+
+///|
+async fn usage() -> Unit {
+  write_line(
     "MoonDiscover 0.1.0-dev\n  browse --interface IPV4 --service _http._tcp.local. [--duration-ms 5000]\n  resolve --interface IPV4 --instance 'Demo._http._tcp.local.' [--duration-ms 5000]\n  doctor --interface IPV4\n  replay --file trace.jsonl [--seed 1]\nNames support DNS presentation escaping. JSONL is written to stdout.",
   )
 }
@@ -65,7 +70,7 @@ async fn run_command(args : Array[String]) -> Unit {
     return
   }
   if args[1] == "--version" {
-    println("0.1.0-dev")
+    write_line("0.1.0-dev")
     return
   }
   let options = options(args)
@@ -76,7 +81,7 @@ async fn run_command(args : Array[String]) -> Unit {
       defer first.close()
       let second = @native.MulticastSocket::open(ip)
       second.close()
-      println(
+      write_line(
         Json::object({
           "event": Json("doctor"),
           "interface_index": Json(first.interface_index),
@@ -105,7 +110,7 @@ async fn run_command(args : Array[String]) -> Unit {
         count += 1
         guard count <= 10000 else { fail("replay command count exceeds 10000") }
         for event in replay.step_line(line) {
-          println(event.stringify())
+          write_line(event.stringify())
         }
       }
     }
@@ -135,12 +140,12 @@ async fn run_command(args : Array[String]) -> Unit {
           @dnssd.Event::Resolved(_) => resolved += 1
           _ => ()
         }
-        println(@dnssd.event_json(event).stringify())
+        write_line(@dnssd.event_json(event).stringify())
       })
       while browser.poll_event() is Some(event) {
-        println(@dnssd.event_json(event).stringify())
+        write_line(@dnssd.event_json(event).stringify())
       }
-      println(
+      write_line(
         Json::object({
           "event": Json("summary"),
           "seen_events": Json(seen),
@@ -172,7 +177,7 @@ async fn main {
     error => Some(error)
   }
   if failure is Some(error) {
-    println(
+    write_line(
       Json::object({ "event": Json("error"), "message": Json("\{error}") }).stringify(),
     )
     raise error

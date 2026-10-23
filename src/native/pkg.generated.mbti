@@ -36,7 +36,7 @@ pub fn Browser::open(UInt32, seed? : UInt32?) -> Self raise
 pub fn Browser::poll(Self, timeout_ms? : Int32) -> Array[@engine.Event] raise
 pub fn Browser::poll_event(Self) -> @engine.Event?
 pub fn Browser::resolve(Self, @model.DnsName, timeout_ms? : Int32) -> Int32 raise
-pub async fn Browser::run(Self, Int32, (@engine.Event) -> Unit) -> Unit
+pub async fn Browser::run(Self, Int32, async (@engine.Event) -> Unit) -> Unit
 pub fn Browser::snapshots(Self) -> Array[@engine.ServiceSnapshot]
 
 pub struct Datagram {

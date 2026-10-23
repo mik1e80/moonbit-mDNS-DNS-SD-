@@ -152,7 +152,7 @@ pub fn Browser::poll(
 pub async fn Browser::run(
   self : Browser,
   duration_ms : Int32,
-  on_event : (@engine.Event) -> Unit,
+  on_event : async (@engine.Event) -> Unit,
 ) -> Unit {
   guard duration_ms > 0 && duration_ms <= 86400000 else {
     raise SocketError("duration outside 1..86400000ms", 0)
