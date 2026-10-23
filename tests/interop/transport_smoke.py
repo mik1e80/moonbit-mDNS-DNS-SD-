@@ -74,8 +74,8 @@ def main():
         stop.set()
         worker.join(timeout=2)
         witness.close()
-        # Test unicast delivery with other 5353 listeners removed; shared unicast
-        # delivery with OS responders is platform-dependent and not claimed.
+        # Remove only our test listeners. System/browser 5353 listeners may
+        # remain; record unicast delivery as observed, without stopping them.
         marker = b"MD\x84\x00" + b"\x00" * 8
         sender = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sender.bind((args.interface, 0))
@@ -112,7 +112,7 @@ def main():
                 "coexistence_and_rebind": any(e.get("second_bind") for e in events) and any(e.get("rebind") for e in events),
                 "unicast_received_with_destination_metadata": process.returncode == 0 and any(e.get("destination") == args.interface + ":5353" and e.get("interface_index", 0) > 0 for e in unicast_packets),
             },
-            "limits": ["same-host Windows experiment; no second-device or Linux validation", "no production cache or DNS-SD aggregation yet", "IP receive TTL not exposed", "unicast tested without competing listeners; system responder coexistence and cross-interface rejection not tested"],
+            "limits": ["same-host Windows experiment; no second-device or Linux validation", "no production cache or DNS-SD aggregation yet", "IP receive TTL not exposed", "only test publisher/witness listeners were closed for unicast; system/browser listeners may remain; cross-interface rejection not tested"],
         }
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")

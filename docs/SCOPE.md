@@ -4,12 +4,12 @@
 
 | 层 | 计划 | 当前状态 |
 | --- | --- | --- |
-| 模型与 wire | 标签字节、二进制 TXT、PTR/SRV/TXT/A/AAAA | 待实现 |
+| 模型与 wire | 标签字节、二进制 TXT、PTR/SRV/TXT/A/AAAA | 基础实现与 9 个轻量用例已通过，完整边界验收待补 |
 | 缓存与引擎 | 范围隔离、TTL、goodbye、cache-flush、事件和查询调度 | 待实现 |
-| 核心后端 | JS、Wasm、Native | 待逐项验证 |
-| 实时网络 | 首先 IPv4、指定接口、5353 共存 | M0 验证中 |
+| 核心后端 | JS、Wasm、Native | JS 冒烟通过；Native 编译通过；Wasm 未完整验证 |
+| 实时网络 | 首先 IPv4、指定接口、5353 共存 | Windows 同机组播收发与元数据通过；单播未收到，第二设备/平台待验证 |
 | CLI | browse、resolve、doctor、replay | 待实现 |
-| 发布 | GitHub CI、Mooncakes、仓库外消费 | 待实现 |
+| 发布 | GitHub CI、Mooncakes、仓库外消费 | 首轮轻量 CI 已通过；Mooncakes 与独立消费待完成 |
 
 暂缓：完整发布者、自动重命名、跨子网、反射器、守护进程、自动枚举服务类型、IPv6 组播。
 

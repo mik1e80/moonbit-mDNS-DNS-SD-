@@ -1,0 +1,81 @@
+{
+  "stage": "M0 transport spike",
+  "date": "2026-10-23",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "python": "3.12.14",
+  "zeroconf": "0.148.0",
+  "interface_ipv4": "10.12.179.23",
+  "token": "moondiscover-50ec6dcf6732",
+  "publisher": {
+    "type": "_http._tcp.local.",
+    "name": "moondiscover-50ec6dcf6732._http._tcp.local.",
+    "port": 43219,
+    "server": "moondiscover-50ec6dcf6732.local."
+  },
+  "command": "native_spike <interface-ipv4>",
+  "exit_code": 0,
+  "stderr": "",
+  "async_probes": {
+    "multicast": {
+      "exit_code": 0,
+      "stdout": "bound=0.0.0.0:5353 mode=multicast interface=10.12.179.23\nsend_error=Failure(multicast-only sockets created with `@socket.UdpServer::multicast()` cannot be used for sending)\nno_response_in_window milliseconds=3000\n",
+      "stderr": ""
+    },
+    "ordinary": {
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": "OSError(\"@socket.UdpServer::new(): Only one usage of each socket address (protocol/network address/port) is normally permitted.\")\n"
+    }
+  },
+  "query_witness": [
+    {
+      "source": [
+        "10.12.179.23",
+        5353
+      ],
+      "sha256": "2f796927af5321a14302127898b39348b43640a53d1ded1c1d6d7d3eda2ff14f"
+    }
+  ],
+  "service_packets": [
+    {
+      "event": "packet",
+      "source": "10.12.179.23:5353",
+      "destination": "224.0.0.251:5353",
+      "interface_index": 11,
+      "decoded_records": 5,
+      "hex": "000084000000000100000004055f68747470045f746370056c6f63616c00000c000100001194001c196d6f6f6e646973636f7665722d353065633664636636373332c00cc028001080010000119400301e64656d6f3d6d6f6f6e646973636f7665722d3530656336646366363733320962696e6172793d00ff06656d7074793dc0280021800100000078002200000000a8d3196d6f6f6e646973636f7665722d353065633664636636373332c017c028002f8001000000780008c028000400000008c092000180010000007800040a0cb317",
+      "sha256": "ff70b5a3f76802870c90262b338eec5a5d430c4f536c52036733e0737a45f42b"
+    }
+  ],
+  "unicast": {
+    "exit_code": 0,
+    "stderr": "",
+    "packets": []
+  },
+  "lifecycle": [
+    {
+      "event": "bound",
+      "port": 5353,
+      "second_bind": true
+    },
+    {
+      "event": "closed",
+      "rebind": true
+    }
+  ],
+  "checks": {
+    "native_exit_zero": true,
+    "query_seen_from_selected_ip_and_5353": true,
+    "independent_publisher_response_received": true,
+    "independent_response_decoded": true,
+    "ingress_interface_and_multicast_destination": true,
+    "coexistence_and_rebind": true,
+    "unicast_received_with_destination_metadata": false
+  },
+  "limits": [
+    "same-host Windows experiment; no second-device or Linux validation",
+    "no production cache or DNS-SD aggregation yet",
+    "IP receive TTL not exposed",
+    "unicast tested without competing listeners; system responder coexistence and cross-interface rejection not tested"
+  ]
+}

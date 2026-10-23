@@ -15,3 +15,12 @@ Research references (no source copied):
 - RFC 6762 / RFC 6763: protocol references; no RFC code components copied.
   https://www.rfc-editor.org/info/rfc6762
   https://www.rfc-editor.org/info/rfc6763
+
+Independent test tools (not production runtime dependencies; no source copied):
+- python-zeroconf 0.148.0, LGPL-2.1-or-later.
+  https://github.com/python-zeroconf/python-zeroconf
+- ifaddr 0.2.0, MIT. https://github.com/pydron/ifaddr
+  Installed only into the local test virtual environment via requirements.txt.
+
+fixtures/ contains responses from our own synthetic test service. See
+fixtures/README.md for packet provenance and hashes.

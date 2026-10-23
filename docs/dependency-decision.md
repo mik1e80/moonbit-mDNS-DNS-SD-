@@ -3,6 +3,7 @@
 ## 固定输入
 
 - 本机 moon 0.1.20260920 (914d7da)、moonc v0.10.14+7d59c7ec9。
+  实际安装 0.22.5 后发现旧 moon 不识别 `max_concurrent_tests`，因此在项目 `.tools` 固定新版 moon 0.1.20261023 / moonc v0.10.17+d971670cd，已实际编译通过；全局工具链未变。归档散列见 `toolchain.json`。
 - 安装包 moonbitlang/async 0.22.5，Apache-2.0。上游核对提交 `021e5c1fbb782485eb6086d6c8c74009ca75b1d6`。发布包与该提交不能未经比对直接认定相同。
 - moon-dns-stub 核对提交 `d68d543f41b8f4b383df3efec2d50ef3b9590b0c`，版本 0.1.0，Apache-2.0。
 - RTC 核对提交 `0d823a5d5da14eae526b37b9dae905f1e3bc72ff`。
