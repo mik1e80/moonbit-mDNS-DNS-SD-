@@ -49,6 +49,10 @@ pub struct Engine {
   priv mut now_ms : Int64
   priv mut closed : Bool
   priv mut lost : Int64
+  priv mut jobs : Array[QueryJob]
+  priv mut pending : Array[QuestionSpec]
+  priv query_capacity : Int32
+  priv mut rng : UInt32
 }
 
 ///|
@@ -56,12 +60,17 @@ pub fn Engine::new(
   cache_capacity~ : Int32 = 2048,
   service_capacity~ : Int32 = 512,
   event_capacity~ : Int32 = 256,
+  query_capacity~ : Int32 = 256,
+  seed~ : UInt32 = 1U,
 ) -> Engine raise {
   guard service_capacity > 0 &&
     service_capacity <= 4096 &&
     event_capacity >= 2 &&
     event_capacity <= 16384 else {
     raise ResourceLimit("invalid service/event capacity")
+  }
+  guard query_capacity > 0 && query_capacity <= 8192 else {
+    raise ResourceLimit("invalid query capacity")
   }
   {
     cache: @cache.RecordCache::new(capacity=cache_capacity),
@@ -74,6 +83,10 @@ pub fn Engine::new(
     now_ms: 0,
     closed: false,
     lost: 0,
+    jobs: [],
+    pending: [],
+    query_capacity,
+    rng: seed,
   }
 }
 
@@ -334,6 +347,8 @@ fn Engine::reconcile(self : Engine, reason : String) -> Unit {
     }
   }
   self.services = current
+  self.sync_queries()
+  self.schedule_queries()
 }
 
 ///|
@@ -417,5 +432,21 @@ pub fn Engine::dropped_events(self : Engine) -> Int64 {
 
 ///|
 pub fn Engine::next_deadline(self : Engine) -> Int64? {
-  self.cache.next_deadline()
+  if self.closed {
+    return None
+  }
+  let mut result = self.cache.next_deadline()
+  if !self.pending.is_empty() {
+    result = Some(self.now_ms)
+  }
+  for job in self.jobs {
+    for deadline in [job.regular_at, job.refresh_at] {
+      if deadline is Some(time) {
+        if result is None || (result is Some(old) && time < old) {
+          result = Some(time)
+        }
+      }
+    }
+  }
+  result
 }

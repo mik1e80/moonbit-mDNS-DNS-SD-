@@ -12,6 +12,8 @@ pub fn decode_name(Bytes, Int32) -> (@model.DnsName, Int32) raise WireError
 
 pub fn qm_query(@model.DnsName, Int32) -> Bytes raise WireError
 
+pub fn query_with_answers(@model.DnsName, Int32, Array[Record]) -> Bytes raise WireError
+
 // Errors
 pub suberror WireError {
   Malformed(String)
