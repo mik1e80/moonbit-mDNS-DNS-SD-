@@ -28,6 +28,7 @@ pub(all) enum Event {
   Unavailable(ServiceSnapshot, String)
   Removed(ServiceSnapshot, String)
   Diagnostic(String, String)
+  ResolveTimedOut(Int32)
 }
 
 ///|
@@ -35,6 +36,8 @@ struct Subscription {
   id : Int32
   scope : String
   service_type : @model.DnsName
+  instance : @model.DnsName?
+  deadline : Int64?
 }
 
 ///|
@@ -183,7 +186,13 @@ pub fn Engine::browse(
   self.now_ms = now
   let id = self.next_id
   self.next_id += 1
-  self.interests.push({ id, scope, service_type, })
+  self.interests.push({
+    id,
+    scope,
+    service_type,
+    instance: None,
+    deadline: None,
+  })
   self.reconcile(
     if removed.is_empty() {
       "subscribed"
@@ -209,14 +218,14 @@ fn newest(records : Array[@cache.CachedRecord]) -> Array[@cache.CachedRecord] {
 fn Engine::build_snapshot(
   self : Engine,
   sub : Subscription,
-  ptr : @cache.CachedRecord,
+  ptr_expiry : Int64,
   instance : @model.DnsName,
 ) -> ServiceSnapshot {
   let missing : Array[String] = []
   let mut target : @model.DnsName? = None
   let mut port : Int32? = None
   let mut txt : @model.TxtRecord? = None
-  let mut expiry = ptr.expires_at
+  let mut expiry = ptr_expiry
   let srv_records = newest(self.cache.records(sub.scope, instance, 33))
   if srv_records.length() != 1 {
     missing.push(if srv_records.is_empty() { "srv" } else { "ambiguous_srv" })
@@ -291,6 +300,20 @@ fn Engine::reconcile(self : Engine, reason : String) -> Unit {
   let current : Array[ServiceSnapshot] = []
   let mut limited = false
   for sub in self.interests {
+    if sub.instance is Some(instance) {
+      if !self.cache.records(sub.scope, instance, 33).is_empty() ||
+        !self.cache.records(sub.scope, instance, 16).is_empty() {
+        let snapshot = self.build_snapshot(sub, 9223372036854775807L, instance)
+        if !current.any(s => same_identity(s, snapshot)) {
+          if current.length() < self.service_capacity {
+            current.push(snapshot)
+          } else {
+            limited = true
+          }
+        }
+      }
+      continue
+    }
     for ptr in self.cache.records(sub.scope, sub.service_type, 12) {
       if ptr.record.data is @wire.Ptr(instance) {
         if !is_instance(instance, sub.service_type) {
@@ -301,7 +324,7 @@ fn Engine::reconcile(self : Engine, reason : String) -> Unit {
           )
           continue
         }
-        let snapshot = self.build_snapshot(sub, ptr, instance)
+        let snapshot = self.build_snapshot(sub, ptr.expires_at, instance)
         if current.any(s => same_identity(s, snapshot)) {
           continue
         }
@@ -347,6 +370,16 @@ fn Engine::reconcile(self : Engine, reason : String) -> Unit {
     }
   }
   self.services = current
+  self.interests = self.interests.map(sub => {
+    if sub.instance is Some(instance) &&
+      current.any(s => {
+        s.scope == sub.scope && s.instance.same_name(instance) && s.complete
+      }) {
+      { ..sub, deadline: None, }
+    } else {
+      sub
+    }
+  })
   self.sync_queries()
   self.schedule_queries()
 }
@@ -373,6 +406,10 @@ pub fn Engine::ingest_message(
   guard !self.closed else { raise Closed }
   let removed = self.cache.ingest(scope, message, now)
   self.now_ms = now
+  if self.expire_resolvers() {
+    self.reconcile("resolve_timeout")
+    return
+  }
   self.reconcile(
     if removed.is_empty() {
       "response"
@@ -387,6 +424,10 @@ pub fn Engine::advance(self : Engine, now : Int64) -> Unit raise {
   guard !self.closed else { raise Closed }
   let removed = self.cache.advance(now)
   self.now_ms = now
+  if self.expire_resolvers() {
+    self.reconcile("resolve_timeout")
+    return
+  }
   self.reconcile(if removed.is_empty() { "time" } else { removed[0].reason })
 }
 
@@ -445,6 +486,13 @@ pub fn Engine::next_deadline(self : Engine) -> Int64? {
         if result is None || (result is Some(old) && time < old) {
           result = Some(time)
         }
+      }
+    }
+  }
+  for sub in self.interests {
+    if sub.deadline is Some(time) {
+      if result is None || (result is Some(old) && time < old) {
+        result = Some(time)
       }
     }
   }

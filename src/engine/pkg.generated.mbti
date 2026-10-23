@@ -32,6 +32,7 @@ pub fn Engine::new(cache_capacity? : Int32, service_capacity? : Int32, event_cap
 pub fn Engine::next_deadline(Self) -> Int64?
 pub fn Engine::poll_event(Self) -> Event?
 pub fn Engine::poll_outbound(Self) -> Outbound?
+pub fn Engine::resolve(Self, @model.DnsName, String, Int64, timeout_ms? : Int32) -> Int32 raise
 pub fn Engine::snapshots(Self) -> Array[ServiceSnapshot]
 
 pub(all) enum Event {
@@ -41,6 +42,7 @@ pub(all) enum Event {
   Unavailable(ServiceSnapshot, String)
   Removed(ServiceSnapshot, String)
   Diagnostic(String, String)
+  ResolveTimedOut(Int32)
 }
 
 pub struct Outbound {
