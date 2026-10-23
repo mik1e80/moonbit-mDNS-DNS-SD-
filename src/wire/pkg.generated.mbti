@@ -1,0 +1,62 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "mik1e80/dnssd/src/wire"
+
+import {
+  "mik1e80/dnssd/src/model",
+}
+
+// Values
+pub fn decode(Bytes) -> Message raise WireError
+
+pub fn decode_name(Bytes, Int32) -> (@model.DnsName, Int32) raise WireError
+
+pub fn qm_query(@model.DnsName, Int32) -> Bytes raise WireError
+
+// Errors
+pub suberror WireError {
+  Malformed(String)
+}
+
+// Types and methods
+pub struct Message {
+  id : Int32
+  flags : Int32
+  questions : Array[Question]
+  records : Array[Record]
+}
+
+pub struct Question {
+  name : @model.DnsName
+  rr_type : Int32
+  rr_class : Int32
+  unicast_response : Bool
+}
+
+pub(all) enum RData {
+  A(Bytes)
+  Aaaa(Bytes)
+  Ptr(@model.DnsName)
+  Srv(Int32, Int32, Int32, @model.DnsName)
+  Txt(@model.TxtRecord)
+  Unknown(Bytes)
+}
+
+pub struct Record {
+  name : @model.DnsName
+  rr_type : Int32
+  rr_class : Int32
+  cache_flush : Bool
+  ttl : UInt32
+  data : RData
+  section : Section
+}
+
+pub(all) enum Section {
+  Answer
+  Authority
+  Additional
+}
+
+// Type aliases
+
+// Traits
