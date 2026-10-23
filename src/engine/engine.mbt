@@ -50,6 +50,7 @@ pub struct Engine {
   priv service_capacity : Int32
   priv mut next_id : Int32
   priv mut now_ms : Int64
+  priv mut evaluated_at : Int64
   priv mut closed : Bool
   priv mut lost : Int64
   priv mut jobs : Array[QueryJob]
@@ -84,6 +85,7 @@ pub fn Engine::new(
     service_capacity,
     next_id: 1,
     now_ms: 0,
+    evaluated_at: 0,
     closed: false,
     lost: 0,
     jobs: [],
@@ -375,6 +377,7 @@ fn Engine::reconcile(self : Engine, reason : String) -> Unit {
     }
   }
   self.services = current
+  self.evaluated_at = self.now_ms
   self.interests = self.interests.map(sub => {
     if sub.instance is Some(instance) &&
       current.any(s => {
@@ -433,6 +436,10 @@ pub fn Engine::advance(self : Engine, now : Int64) -> Unit raise {
     self.reconcile("resolve_timeout")
     return
   }
+  if removed.is_empty() {
+    self.schedule_queries()
+    return
+  }
   self.reconcile(if removed.is_empty() { "time" } else { removed[0].reason })
 }
 
@@ -459,7 +466,12 @@ pub fn Engine::close(self : Engine) -> Unit {
 
 ///|
 pub fn Engine::snapshots(self : Engine) -> Array[ServiceSnapshot] {
-  self.services.map(clone_snapshot)
+  self.services.map(s => {
+    ..clone_snapshot(s),
+    remaining_ttl_ms: (s.remaining_ttl_ms - (self.now_ms - self.evaluated_at)).max(
+      0L,
+    ),
+  })
 }
 
 ///|
