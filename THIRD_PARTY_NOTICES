@@ -1,0 +1,17 @@
+MoonDiscover source is licensed under Apache-2.0; see LICENSE.
+
+Runtime/build dependency:
+- moonbitlang/async 0.22.5, International Digital Economy Academy,
+  Apache-2.0. https://github.com/moonbitlang/async
+  Dependency source and license are installed by MoonBit, not vendored here.
+- MoonBit core/runtime and toolchain: distributed separately with their own
+  notices. No runtime source is copied into this repository.
+
+Research references (no source copied):
+- jinshengmeng46/moon-dns-stub at d68d543f41b8f4b383df3efec2d50ef3b9590b0c,
+  Apache-2.0. https://github.com/jinshengmeng46/moon-dns-stub
+- moonbit-community/rtc.mbt at 0d823a5d5da14eae526b37b9dae905f1e3bc72ff.
+  https://github.com/moonbit-community/rtc.mbt
+- RFC 6762 / RFC 6763: protocol references; no RFC code components copied.
+  https://www.rfc-editor.org/info/rfc6762
+  https://www.rfc-editor.org/info/rfc6763

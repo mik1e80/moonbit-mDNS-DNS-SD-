@@ -24,3 +24,7 @@ keywords = ["mdns", "dns-sd", "service-discovery"]
 preferred_target = "wasm"
 
 description = "MoonDiscover: DNS-SD browsing and resolution with a portable protocol core"
+
+import {
+  "moonbitlang/async@0.22.5",
+}

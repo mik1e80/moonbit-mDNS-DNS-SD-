@@ -4,3 +4,6 @@ target/
 target
 .mooncakes/
 .moonagent/
+.tools/
+.venv/
+__pycache__/
