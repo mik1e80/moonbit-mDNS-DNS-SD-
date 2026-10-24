@@ -81,7 +81,7 @@ def main():
                     time.sleep(0.01)
                 stdout, stderr = child.communicate(timeout=5)
                 if child.returncode != 0:
-                    raise RuntimeError(stderr[-4000:])
+                    raise RuntimeError((stdout + stderr)[-4000:])
                 result = json.loads(stdout)
                 for key, value in result.items():
                     if key.endswith('_ms') or key == 'dropped_events':

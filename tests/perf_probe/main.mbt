@@ -50,7 +50,7 @@ fn records(index : Int32) -> Array[@dnssd.Record] raise {
 }
 
 ///|
-fn main raise {
+fn run() -> Unit raise {
   let args = @env.args()
   guard args.length() == 2 else { fail("usage: perf_probe <50|200|500>") }
   let size = match args[1] {
@@ -103,16 +103,26 @@ fn main raise {
   }
   guard seen == size && resolved == size else { fail("missing initial events") }
   let repeated = @transport.monotonic_ms()
+  let mut diagnostics = 0
+  let mut outbound = 0
   for packet in batches {
     engine.ingest_message(packet, "perf", 1000)
+    while engine.poll_outbound() is Some(_) {
+      outbound += 1
+    }
+    event_peak = event_peak.max(engine.stats().queued_events)
+    while engine.poll_event() is Some(event) {
+      guard event is @dnssd.Event::Diagnostic(_, _) else {
+        fail("duplicate packet changed service content")
+      }
+      diagnostics += 1
+    }
   }
   let repeat_ms = @transport.monotonic_ms() - repeated
   guard engine.poll_event() is None && engine.stats().cached_records == size * 4 else {
     fail("duplicates changed content or grew cache")
   }
   let idle = @transport.monotonic_ms()
-  let mut diagnostics = 0
-  let mut outbound = 0
   for tick in 1..<=3600 {
     engine.advance(1000L + tick.to_int64() * 1000L)
     while engine.poll_outbound() is Some(_) {
@@ -152,4 +162,18 @@ fn main raise {
       "invariants_passed": Json(true),
     }).stringify(),
   )
+}
+
+///|
+fn main raise {
+  let failure = try {
+    run()
+    None
+  } catch {
+    error => Some(error)
+  }
+  if failure is Some(error) {
+    println(Json::object({ "error": Json("\{error}") }).stringify())
+    raise error
+  }
 }

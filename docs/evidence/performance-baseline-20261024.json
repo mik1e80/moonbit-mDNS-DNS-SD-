@@ -1,0 +1,60 @@
+{
+  "date": "2026-10-24T23:55:34.348988+08:00",
+  "source_commit": "04fa64d7d1ed0789589eae011d705a487ad0529a",
+  "source_dirty": true,
+  "binary_sha256": "a6a8874e2410a9e52f2b0f7759c8ffd197cbbd9f988b56c12768fe2677fcf5ba",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "processor": "",
+  "logical_cpus": 32,
+  "build_mode": "native release",
+  "memory_method": "sampled process peak working set",
+  "sample_interval_ms": 10,
+  "runs_per_size": 1,
+  "results": [
+    {
+      "services": 200,
+      "records": 800,
+      "batches": 7,
+      "ingest_ms": 1218,
+      "duplicate_ms": 2422,
+      "idle_ticks": 3600,
+      "virtual_elapsed_ms": 3600000,
+      "idle_ms": 94,
+      "cache_peak_records": 800,
+      "event_peak": 400,
+      "query_jobs": 801,
+      "outbound_queries": 2400,
+      "diagnostics": 888,
+      "dropped_events": 0,
+      "invariants_passed": true,
+      "wall_ms": 3855.31,
+      "sampled_peak_process_bytes": 9654272
+    },
+    {
+      "services": 500,
+      "records": 2000,
+      "batches": 16,
+      "ingest_ms": 15203,
+      "duplicate_ms": 35625,
+      "idle_ticks": 3600,
+      "virtual_elapsed_ms": 3600000,
+      "idle_ms": 594,
+      "cache_peak_records": 2000,
+      "event_peak": 1000,
+      "query_jobs": 2001,
+      "outbound_queries": 6000,
+      "diagnostics": 7936,
+      "dropped_events": 0,
+      "invariants_passed": true,
+      "wall_ms": 51990.5,
+      "sampled_peak_process_bytes": 10174464
+    }
+  ],
+  "passed": true,
+  "limits": [
+    "single host observation, not a latency guarantee",
+    "process RSS includes runtime, generated inputs and protocol state",
+    "virtual hour is accelerated time, not an hour-long wall-clock soak",
+    "synthetic decoded records; no multicast or wire decoding in this measurement"
+  ]
+}

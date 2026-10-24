@@ -1,0 +1,72 @@
+{
+  "source_commit": "04fa64d7d1ed0789589eae011d705a487ad0529a",
+  "source_dirty": true,
+  "date": "2026-10-24T23:58:03.398260+08:00",
+  "cases": [
+    {
+      "name": "ignore_cache_flush",
+      "file": "src/cache/cache.mbt",
+      "selection": "src/cache/cache_test.mbt",
+      "filter": "smoke: split flush*",
+      "baseline": {
+        "exit_code": 0,
+        "tests": 1,
+        "passed": 1,
+        "failed": 0,
+        "output": "Total tests: 1, passed: 1, failed: 0.\nUsing cached moonbitlang/async@0.22.5\n"
+      },
+      "mutant": {
+        "exit_code": 2,
+        "tests": 1,
+        "passed": 0,
+        "failed": 1,
+        "output": "[mik1e80/dnssd] test src/cache/cache_test.mbt:55 (\"smoke: split flush burst retains recent members while old addresses expire\") failed: src/cache/cache_test.mbt:63:3-63:33@mik1e80/dnssd FAILED: `0 != 1`\ndiff:\n-0 +1\nTotal tests: 1, passed: 0, failed: 1.\n"
+      },
+      "killed": true
+    },
+    {
+      "name": "ptr_always_complete",
+      "file": "src/engine/engine.mbt",
+      "selection": "src/engine/engine_test.mbt",
+      "filter": "smoke: updates expiry*",
+      "baseline": {
+        "exit_code": 0,
+        "tests": 1,
+        "passed": 1,
+        "failed": 0,
+        "output": "Total tests: 1, passed: 1, failed: 0.\n"
+      },
+      "mutant": {
+        "exit_code": 2,
+        "tests": 1,
+        "passed": 0,
+        "failed": 1,
+        "output": "[mik1e80/dnssd] test src/engine/engine_test.mbt:82 (\"smoke: updates expiry and goodbye produce distinct state transitions\") failed: src/engine/engine_test.mbt:94:3-96:4@mik1e80/dnssd FAILED: `false` is not true\nTotal tests: 1, passed: 0, failed: 1.\n"
+      },
+      "killed": true
+    },
+    {
+      "name": "split_literal_instance_dot",
+      "file": "src/model/name.mbt",
+      "selection": "src/model/model_test.mbt",
+      "filter": "smoke: UTF-8 instance*",
+      "baseline": {
+        "exit_code": 0,
+        "tests": 1,
+        "passed": 1,
+        "failed": 0,
+        "output": "Total tests: 1, passed: 1, failed: 0.\n"
+      },
+      "mutant": {
+        "exit_code": 2,
+        "tests": 1,
+        "passed": 0,
+        "failed": 1,
+        "output": "[mik1e80/dnssd] test src/model/model_test.mbt:2 (\"smoke: UTF-8 instance label keeps literal dot and wire octets\") failed: src/model/model_test.mbt:6:3-9:4@mik1e80/dnssd FAILED: `<Bytes: [0xe4, 0xb8, 0xad, 0xe6, 0x96, 0x87]> != <Bytes:\n  [\n    0xe4,\n    0xb8,\n    0xad,\n    0xe6,\n    0x96,\n    0x87,\n    0x2e,\n    0xe6,\n    0x9c,\n    0x8d,\n    0xe5,\n    0x8a,\n    0xa1,\n  ]>`\ndiff:\n<Bytes:\n  [\n    0xe4,\n    0xb8,\n    0xad,\n    0xe6,\n    0x96,\n    0x87,\n    +0x2e,\n    +0xe6,\n    +0x9c,\n    +0x8d,\n    +0xe5,\n    +0x8a,\n    +0xa1,\n  ]>\nTotal tests: 1, passed: 0, failed: 1.\n"
+      },
+      "killed": true
+    }
+  ],
+  "passed": true,
+  "original_checkout_unchanged": true
+}
