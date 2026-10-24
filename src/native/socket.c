@@ -181,9 +181,12 @@ MOONBIT_FFI_EXPORT int moondiscover_socket_receive(
   DWORD count = 0;
   if (recv_message(s, &msg, &count, NULL, NULL) != 0) {
     int err = MD_ERROR();
+    /* Datagram truncation consumes an untrusted packet, not the socket.
+       Return a length sentinel rather than a platform-specific socket error. */
+    if (err == WSAEMSGSIZE) return size + 1;
     return err == WSAEWOULDBLOCK || err == WSAEINTR ? 0 : -err;
   }
-  if (msg.dwFlags & (MSG_TRUNC | MSG_CTRUNC)) return -WSAEMSGSIZE;
+  if (msg.dwFlags & (MSG_TRUNC | MSG_CTRUNC)) return size + 1;
   for (WSACMSGHDR *c = WSA_CMSG_FIRSTHDR(&msg); c; c = WSA_CMSG_NXTHDR(&msg, c)) {
     if (c->cmsg_level == IPPROTO_IP && c->cmsg_type == IP_PKTINFO &&
         c->cmsg_len >= WSA_CMSG_LEN(sizeof(IN_PKTINFO))) {
@@ -208,7 +211,7 @@ MOONBIT_FFI_EXPORT int moondiscover_socket_receive(
   msg.msg_controllen = sizeof(control.bytes);
   int count = (int)recvmsg(s, &msg, MSG_DONTWAIT);
   if (count < 0) return errno == EAGAIN || errno == EINTR ? 0 : -errno;
-  if (msg.msg_flags & (MSG_TRUNC | MSG_CTRUNC)) return -EMSGSIZE;
+  if (msg.msg_flags & (MSG_TRUNC | MSG_CTRUNC)) return size + 1;
   for (struct cmsghdr *c = CMSG_FIRSTHDR(&msg); c; c = CMSG_NXTHDR(&msg, c)) {
     if (c->cmsg_level == IPPROTO_IP && c->cmsg_type == IP_PKTINFO &&
         c->cmsg_len >= CMSG_LEN(sizeof(struct in_pktinfo))) {

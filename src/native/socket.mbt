@@ -85,7 +85,8 @@ pub fn MulticastSocket::send(
 
 ///|
 /// Bounded synchronous poll for M0. Not an async event-loop integration.
-/// Receive metadata is required; timeout returns None, errors raise.
+/// Receive metadata is required. Timeout or a discarded truncated datagram
+/// returns None; genuine socket failures raise.
 pub fn MulticastSocket::receive(
   self : MulticastSocket,
   timeout_ms~ : Int32 = 50,
@@ -97,7 +98,7 @@ pub fn MulticastSocket::receive(
   let data = FixedArray::make(9000, b'\x00')
   let metadata = FixedArray::make(4, 0)
   let n = socket_receive(self.handle, data, 9000, metadata, timeout_ms)
-  if n == 0 {
+  if n == 0 || n > data.length() {
     return None
   }
   guard n > 0 else { raise SocketError("receive", -n.to_int64()) }

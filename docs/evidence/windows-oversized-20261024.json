@@ -1,0 +1,95 @@
+{
+  "date": "2026-10-24T16:19:14.260108+08:00",
+  "source_commit": "622b9a17512611a22530199d551d539131e8be8c",
+  "source_dirty": true,
+  "cli_sha256": "914aefef2d9fe2fdf8c15d213446bb053316c4fddaf2b67e97915a8bee149bd0",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "oversized_datagram_lengths": [
+    9001,
+    16000
+  ],
+  "checks": {
+    "survived_oversized_datagrams": true,
+    "later_valid_service_resolved": true,
+    "normal_exit": true,
+    "completed_observation_window": true
+  },
+  "exit_code": 0,
+  "events": [
+    {
+      "event": "seen",
+      "service": {
+        "scope": "ipv4:11:7737125",
+        "service_type": "_http._tcp.local.",
+        "instance": "oversized-cd21cafc0b._http._tcp.local.",
+        "instance_label": "oversized-cd21cafc0b",
+        "target": "oversized-cd21cafc0b.local.",
+        "port": 18080,
+        "txt_entries_hex": [
+          "64656d6f3d6f76657273697a65642d63643231636166633062"
+        ],
+        "addresses": [
+          "10.12.179.23"
+        ],
+        "complete": true,
+        "missing": [],
+        "remaining_ttl_ms": 120000
+      },
+      "reason": null
+    },
+    {
+      "event": "resolved",
+      "service": {
+        "scope": "ipv4:11:7737125",
+        "service_type": "_http._tcp.local.",
+        "instance": "oversized-cd21cafc0b._http._tcp.local.",
+        "instance_label": "oversized-cd21cafc0b",
+        "target": "oversized-cd21cafc0b.local.",
+        "port": 18080,
+        "txt_entries_hex": [
+          "64656d6f3d6f76657273697a65642d63643231636166633062"
+        ],
+        "addresses": [
+          "10.12.179.23"
+        ],
+        "complete": true,
+        "missing": [],
+        "remaining_ttl_ms": 120000
+      },
+      "reason": null
+    },
+    {
+      "event": "removed",
+      "service": {
+        "scope": "ipv4:11:7737125",
+        "service_type": "_http._tcp.local.",
+        "instance": "oversized-cd21cafc0b._http._tcp.local.",
+        "instance_label": "oversized-cd21cafc0b",
+        "target": "oversized-cd21cafc0b.local.",
+        "port": 18080,
+        "txt_entries_hex": [
+          "64656d6f3d6f76657273697a65642d63643231636166633062"
+        ],
+        "addresses": [
+          "10.12.179.23"
+        ],
+        "complete": false,
+        "missing": [],
+        "remaining_ttl_ms": 0
+      },
+      "reason": "closed"
+    },
+    {
+      "event": "summary",
+      "seen_events": 1,
+      "resolved_events": 1,
+      "duration_ms": 1800,
+      "observation": "services_observed"
+    }
+  ],
+  "stderr": "",
+  "interface_ipv4": "10.12.179.23",
+  "limits": [
+    "same-host IPv4 multicast regression"
+  ]
+}
