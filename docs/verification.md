@@ -8,6 +8,8 @@
 
 `tests/interop/cli_smoke.py` 对实际 Windows CLI 二进制离线验证相同输入的两次回放、fixture 端口解析、TTL 到期的 unavailable/removed、移除后的 TTL=0/complete=false、非法参数退出、help/version 和完整 UInt32 种子恢复。构建通过不等于实网通过。
 
+后续另补三项定向回归，验证同一 tick 中不同服务的移除原因和范围隔离；同时失效的 goodbye 与自然 TTL 到期不会互相覆盖。公开实网 fixture 的两次回放及完整服务事件对照也已纳入离线 CLI 冒烟。
+
 提交前执行 `moon info` 和 `moon fmt`，检查公开 `.mbti`；复现命令见 [开发文档](development.md)。原始 zeroconf 报文来源见 [fixtures](../fixtures/README.md)。
 
 ## Windows 实网闭环
@@ -28,6 +30,8 @@
 导出的 [live-20261024.jsonl](../fixtures/live-20261024.jsonl) 经过合成服务名称白名单检查，保留配置、时钟和命令帧。该次录制只有本项目合成服务的报文，实际排除数为 0；导出样本与原 trace 的 SHA256 相同，均在报告中记录。分享其他录制仍须逐次检查。报告中的 TTL/端口/IP 是该次实验观测值。
 
 最初的 [M0 传输报告](transport-spike.md) 保留了单播未收到、整体退出码 1 的历史结果。当前 Browser 明确限定 IPv4 QM 组播，后续闭环成功不将该历史失败改成通过。
+
+另有约两秒的[超长报文回归](evidence/windows-oversized-20261024.json)：发送 9001/16000 字节组播后，浏览器继续解析随后的自建合法响应并正常完成观察窗口。报告记录修复尚未提交时的工作树状态与二进制 SHA256，代码已保存为 `7b9ad71`。此测试验证传输鲁棒性，独立实现互通仍以前述 zeroconf 实验为证据。
 
 ## GitHub CI
 
