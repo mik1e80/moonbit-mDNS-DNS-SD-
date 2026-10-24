@@ -1,0 +1,3 @@
+# Recorded byte fixtures keep stable hashes across Windows/Linux checkouts.
+fixtures/*.jsonl -text
+fixtures/*.hex -text
