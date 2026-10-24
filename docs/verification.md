@@ -12,6 +12,8 @@
 
 提交前执行 `moon info` 和 `moon fmt`，检查公开 `.mbti`；复现命令见 [开发文档](development.md)。原始 zeroconf 报文来源见 [fixtures](../fixtures/README.md)。
 
+浏览器示例的编译回调另有 Node 轻量检查，真实录制的六个服务事件与公开报告逐项一致。真实浏览器还检查了内置查询示例和实际报文产生的 seen/resolved/unavailable/removed 列表；页面仅展示待发查询，不发送网络请求。
+
 ## Windows 实网闭环
 
 公开报告：[windows-live-20261024.json](evidence/windows-live-20261024.json)。源提交为 `f2baff7786e6199bfae105a2f81de62313b30672`，实验开始时工作树干净。环境为 Windows 11、Python 3.12.14、python-zeroconf 0.148.0；发布者是同一台机器上的独立 Python 进程。

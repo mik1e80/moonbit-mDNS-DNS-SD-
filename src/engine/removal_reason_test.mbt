@@ -55,11 +55,7 @@ test "smoke: service unavailability keeps scoped SRV removal reasons" {
   for _ in 0..<4 {
     let _ = engine.poll_event()
   }
-  engine.ingest_message(
-    message([{ ..records[1], ttl: 0, }]),
-    "ethernet",
-    1000,
-  )
+  engine.ingest_message(message([{ ..records[1], ttl: 0, }]), "ethernet", 1000)
   engine.advance(2000)
   match engine.poll_event() {
     Some(@engine.Unavailable(snapshot, "ttl_expired")) =>

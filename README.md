@@ -4,7 +4,15 @@ MoonBit DNS-SD 服务发现库，模块名 `mik1e80/dnssd`，Apache-2.0 许可�
 
 通过 `_http._tcp.local.` 等类型发现实例、主机、端口、二进制 TXT 与地址，持续报告解析、更新、暂不可用和移除。纯 MoonBit 核心负责报文、缓存、聚合、查询调度和确定性回放；Native IPv4 适配层负责指定接口上的实际组播收发。
 
-当前为发布前版本。Windows 已完成同机独立 `python-zeroconf` 进程发布、MoonBit 主动发现、使用发现的动态端口请求 HTTP、TXT 更新、goodbye 移除、异步取消释放和录制回放的闭环。[实网证据](docs/evidence/windows-live-20261024.json)对应源提交 `f2baff7`。Linux 目前只有 Native 编译证据；尚无第二设备、Linux 实网或 Mooncakes 已发布包消费证据。
+0.1.0 的 Windows 实现已完成同机独立 `python-zeroconf` 进程发布、MoonBit 主动发现、使用发现的动态端口请求 HTTP、TXT 更新、goodbye 移除、异步取消释放和录制回放的闭环。[实网证据](docs/evidence/windows-live-20261024.json)对应源提交 `f2baff7`。Linux 目前只有 Native 编译证据；尚无第二设备或 Linux 实网证据。实际发布与包消费结果见[验证记录](docs/verification.md)。
+
+注册表发布完成后，在消费工程声明固定版本：
+
+```text
+moon add mik1e80/dnssd@0.1.0
+```
+
+纯核心导入 `mik1e80/dnssd`；Native 网络入口导入 `mik1e80/dnssd/src/native`。工具链版本与构建要求见下文。
 
 ## 快速开始
 
