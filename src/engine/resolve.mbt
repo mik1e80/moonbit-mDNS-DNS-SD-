@@ -27,7 +27,7 @@ pub fn Engine::resolve(
   guard self.interests.length() < 64 && self.next_id < 2147483647 else {
     raise ResourceLimit("subscription limit (64)")
   }
-  let _ = self.cache.advance(now)
+  let removed = self.cache.advance(now)
   self.now_ms = now
   let id = self.next_id
   self.next_id += 1
@@ -38,7 +38,7 @@ pub fn Engine::resolve(
     instance: Some(instance),
     deadline: Some(now + timeout_ms.to_int64()),
   })
-  self.reconcile("resolve_started")
+  self.reconcile("resolve_started", removals=removed)
   id
 }
 

@@ -195,13 +195,7 @@ pub fn Engine::browse(
     instance: None,
     deadline: None,
   })
-  self.reconcile(
-    if removed.is_empty() {
-      "subscribed"
-    } else {
-      removed[0].reason
-    },
-  )
+  self.reconcile("subscribed", removals=removed)
   id
 }
 
@@ -298,7 +292,58 @@ fn same_content(a : ServiceSnapshot, b : ServiceSnapshot) -> Bool {
 }
 
 ///|
-fn Engine::reconcile(self : Engine, reason : String) -> Unit {
+fn removal_reason(
+  snapshot : ServiceSnapshot,
+  removals : Array[@cache.Removal],
+  fallback : String,
+  vanished~ : Bool = false,
+) -> String {
+  // A vanished browse result is caused by its own PTR, even if an unrelated
+  // record happened to expire earlier in the same timer tick.
+  if vanished {
+    for removal in removals {
+      if removal.scope == snapshot.scope &&
+        removal.record.name.same_name(snapshot.service_type) &&
+        removal.record.data is @wire.Ptr(instance) &&
+        instance.same_name(snapshot.instance) {
+        return removal.reason
+      }
+    }
+  }
+  for removal in removals {
+    if removal.scope != snapshot.scope {
+      continue
+    }
+    let record = removal.record
+    let contributed = match record.data {
+      @wire.Srv(_, _, port, target) =>
+        record.name.same_name(snapshot.instance) &&
+        snapshot.port == Some(port) &&
+        snapshot.target is Some(host) &&
+        target.same_name(host)
+      @wire.Txt(txt) =>
+        record.name.same_name(snapshot.instance) &&
+        snapshot.txt.map(value => value.to_wire()) == Some(txt.to_wire())
+      @wire.A(bytes) | @wire.Aaaa(bytes) =>
+        snapshot.target is Some(host) &&
+        record.name.same_name(host) &&
+        snapshot.addresses.contains(bytes)
+      _ => false
+    }
+    if contributed {
+      return removal.reason
+    }
+  }
+  fallback
+}
+
+///|
+fn Engine::reconcile(
+  self : Engine,
+  reason : String,
+  removals~ : Array[@cache.Removal] = [],
+  withdrawn_reason~ : String? = None,
+) -> Unit {
   let current : Array[ServiceSnapshot] = []
   let mut limited = false
   for sub in self.interests {
@@ -343,10 +388,22 @@ fn Engine::reconcile(self : Engine, reason : String) -> Unit {
   }
   for old in self.services {
     if !current.any(s => same_identity(s, old)) {
+      let still_interested = self.interests.any(sub => {
+        sub.scope == old.scope &&
+        sub.service_type.same_name(old.service_type) &&
+        (
+          sub.instance is None ||
+          (sub.instance is Some(instance) && instance.same_name(old.instance))
+        )
+      })
       self.emit(
         Removed(
           { ..clone_snapshot(old), complete: false, remaining_ttl_ms: 0, },
-          reason,
+          if still_interested {
+            removal_reason(old, removals, reason, vanished=true)
+          } else {
+            withdrawn_reason.unwrap_or(reason)
+          },
         ),
       )
     }
@@ -368,11 +425,21 @@ fn Engine::reconcile(self : Engine, reason : String) -> Unit {
       }
       Some(old) =>
         if old.complete && !snapshot.complete {
-          self.emit(Unavailable(clone_snapshot(snapshot), reason))
+          self.emit(
+            Unavailable(
+              clone_snapshot(snapshot),
+              removal_reason(old, removals, reason),
+            ),
+          )
         } else if !old.complete && snapshot.complete {
           self.emit(Resolved(clone_snapshot(snapshot)))
         } else if !same_content(old, snapshot) {
-          self.emit(Updated(clone_snapshot(snapshot), reason))
+          self.emit(
+            Updated(
+              clone_snapshot(snapshot),
+              removal_reason(old, removals, reason),
+            ),
+          )
         }
     }
   }
@@ -415,16 +482,14 @@ pub fn Engine::ingest_message(
   let removed = self.cache.ingest(scope, message, now)
   self.now_ms = now
   if self.expire_resolvers() {
-    self.reconcile("resolve_timeout")
+    self.reconcile(
+      "response",
+      removals=removed,
+      withdrawn_reason=Some("resolve_timeout"),
+    )
     return
   }
-  self.reconcile(
-    if removed.is_empty() {
-      "response"
-    } else {
-      removed[0].reason
-    },
-  )
+  self.reconcile("response", removals=removed)
 }
 
 ///|
@@ -433,24 +498,28 @@ pub fn Engine::advance(self : Engine, now : Int64) -> Unit raise {
   let removed = self.cache.advance(now)
   self.now_ms = now
   if self.expire_resolvers() {
-    self.reconcile("resolve_timeout")
+    self.reconcile(
+      "time",
+      removals=removed,
+      withdrawn_reason=Some("resolve_timeout"),
+    )
     return
   }
   if removed.is_empty() {
     self.schedule_queries()
     return
   }
-  self.reconcile(if removed.is_empty() { "time" } else { removed[0].reason })
+  self.reconcile("time", removals=removed)
 }
 
 ///|
 pub fn Engine::cancel(self : Engine, id : Int32, now : Int64) -> Unit raise {
   guard !self.closed else { raise Closed }
   guard self.interests.any(s => s.id == id) else { raise UnknownSubscription }
-  let _ = self.cache.advance(now)
+  let removed = self.cache.advance(now)
   self.now_ms = now
   self.interests = self.interests.filter(s => s.id != id)
-  self.reconcile("cancelled")
+  self.reconcile("cancelled", removals=removed)
 }
 
 ///|
