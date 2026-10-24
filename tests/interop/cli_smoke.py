@@ -25,7 +25,7 @@ def main():
     bad = run("browse", "--invalid", "x")
     assert bad.returncode != 0 and json.loads(bad.stdout)["event"] == "error"
     assert run("--help").returncode == 0
-    assert run("--version").stdout.strip() == "0.1.0-dev"
+    assert run("--version").stdout.strip() == "0.1.0"
     config = ROOT / ".tools/config-smoke.jsonl"
     config.parent.mkdir(exist_ok=True)
     config.write_text('{"kind":"config","format":1,"seed":4294967295,"at_ms":0}\n', encoding="utf-8")
