@@ -89,12 +89,14 @@ def main():
         bus = dbus.SystemBus()
         server = dbus.Interface(bus.get_object('org.freedesktop.Avahi', '/'), 'org.freedesktop.Avahi.Server')
         report['avahi_version'] = str(server.GetVersionString())
+        report['publisher_hostname'] = str(server.GetHostNameFqdn())
         group = dbus.Interface(bus.get_object('org.freedesktop.Avahi', server.EntryGroupNew()),
                                'org.freedesktop.Avahi.EntryGroup')
         # The actual independent daemon owns DNS encoding/announcements/goodbye.
-        group.AddAddress(index, 0, dbus.UInt32(0), token + '.local', ipv4)
+        # Use the daemon's existing host A record. Registering the same IP under
+        # another name also tries to claim its reverse PTR and causes collision.
         group.AddService(index, 0, dbus.UInt32(0), token, '_http._tcp', 'local',
-                         token + '.local', dbus.UInt16(http.server_port), txt('one'))
+                         report['publisher_hostname'], dbus.UInt16(http.server_port), txt('one'))
         group.Commit()
         deadline = time.monotonic() + 5
         while int(group.GetState()) != 2:
