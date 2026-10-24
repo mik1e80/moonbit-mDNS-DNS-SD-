@@ -28,6 +28,7 @@ pub fn Engine::resolve(
     raise ResourceLimit("subscription limit (64)")
   }
   let removed = self.cache.advance(now)
+  self.discard_burst()
   self.now_ms = now
   let id = self.next_id
   self.next_id += 1

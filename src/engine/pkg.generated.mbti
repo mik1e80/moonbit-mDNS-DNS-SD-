@@ -48,6 +48,7 @@ pub struct EngineStats {
   queued_events : Int32
   query_jobs : Int32
   queued_questions : Int32
+  queued_datagrams : Int32
   dropped_events : Int64
 }
 

@@ -56,6 +56,7 @@ pub struct Engine {
   priv mut lost : Int64
   priv mut jobs : Array[QueryJob]
   priv mut pending : Array[QuestionSpec]
+  priv fragments : Array[Outbound]
   priv query_capacity : Int32
   priv mut rng : UInt32
 }
@@ -91,6 +92,7 @@ pub fn Engine::new(
     lost: 0,
     jobs: [],
     pending: [],
+    fragments: [],
     query_capacity,
     rng: seed,
   }
@@ -218,6 +220,7 @@ pub fn Engine::browse(
     raise ResourceLimit("subscription limit (64)")
   }
   let removed = self.cache.advance(now)
+  self.discard_burst()
   self.now_ms = now
   let id = self.next_id
   self.next_id += 1
@@ -515,6 +518,7 @@ pub fn Engine::ingest_message(
 ) -> Unit raise {
   guard !self.closed else { raise Closed }
   let removed = self.cache.ingest(scope, message, now)
+  self.discard_burst()
   self.now_ms = now
   if self.expire_resolvers() {
     self.reconcile(
@@ -531,6 +535,9 @@ pub fn Engine::ingest_message(
 pub fn Engine::advance(self : Engine, now : Int64) -> Unit raise {
   guard !self.closed else { raise Closed }
   let removed = self.cache.advance(now)
+  if now != self.now_ms {
+    self.discard_burst()
+  }
   self.now_ms = now
   if self.expire_resolvers() {
     self.reconcile(
@@ -552,6 +559,7 @@ pub fn Engine::cancel(self : Engine, id : Int32, now : Int64) -> Unit raise {
   guard !self.closed else { raise Closed }
   guard self.interests.any(s => s.id == id) else { raise UnknownSubscription }
   let removed = self.cache.advance(now)
+  self.discard_burst()
   self.now_ms = now
   self.interests = self.interests.filter(s => s.id != id)
   self.reconcile("cancelled", removals=removed)
@@ -563,6 +571,7 @@ pub fn Engine::close(self : Engine) -> Unit {
     return
   }
   self.interests = []
+  self.fragments.clear()
   self.reconcile("closed")
   self.cache.clear()
   self.closed = true
@@ -598,7 +607,7 @@ pub fn Engine::next_deadline(self : Engine) -> Int64? {
     return None
   }
   let mut result = self.cache.next_deadline()
-  if !self.pending.is_empty() {
+  if !self.pending.is_empty() || !self.fragments.is_empty() {
     result = Some(self.now_ms)
   }
   for job in self.jobs {

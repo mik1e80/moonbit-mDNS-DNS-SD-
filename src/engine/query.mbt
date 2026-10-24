@@ -177,7 +177,11 @@ fn Engine::schedule_queries(self : Engine) -> Unit {
 
 ///|
 /// Bytes are encoded at polling time, with current remaining TTLs.
+/// Drain/send the whole TC continuation burst before changing engine input.
 pub fn Engine::poll_outbound(self : Engine) -> Outbound? {
+  if !self.fragments.is_empty() {
+    return Some(self.fragments.remove(0))
+  }
   while !self.pending.is_empty() {
     let q = self.pending.remove(0)
     let answers : Array[@wire.Record] = []
@@ -191,17 +195,37 @@ pub fn Engine::poll_outbound(self : Engine) -> Outbound? {
         })
       }
     }
-    let bytes = @wire.query_with_answers(q.name, q.rr_type, answers) catch {
+    let packets = @wire.query_packets(q.name, q.rr_type, answers) catch {
       _ => {
         self.emit(
           Diagnostic(
-            "known_answer_limit", "question withheld; unsupported or oversized single-packet known answers",
+            "known_answer_limit", "question withheld; known-answer burst exceeds configured bounds",
           ),
         )
         continue
       }
     }
-    return Some({ scope: q.scope, name: q.name, rr_type: q.rr_type, bytes, })
+    for bytes in packets {
+      self.fragments.push({
+        scope: q.scope,
+        name: q.name,
+        rr_type: q.rr_type,
+        bytes,
+      })
+    }
+    return Some(self.fragments.remove(0))
   }
   None
+}
+
+///|
+fn Engine::discard_burst(self : Engine) -> Unit {
+  if !self.fragments.is_empty() {
+    self.fragments.clear()
+    self.emit(
+      Diagnostic(
+        "outbound_batch_interrupted", "drain and send every known-answer continuation before changing engine input",
+      ),
+    )
+  }
 }
