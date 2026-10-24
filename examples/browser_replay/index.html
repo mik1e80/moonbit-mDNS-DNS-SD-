@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>MoonDiscover · 离线回放</title>
+  <link rel="stylesheet" href="style.css">
+  <script defer src="browser_replay.js"></script>
+  <script defer src="ui.js"></script>
+</head>
+<body>
+  <main>
+    <header>
+      <p class="eyebrow">MOONDISCOVER / REPLAY</p>
+      <h1>把一次发现，重新看清。</h1>
+      <p class="intro">加载 JSONL 录制，用同一份 MoonBit 核心重现服务事件与待发查询。</p>
+      <p class="scope"><span aria-hidden="true">●</span> 仅离线回放 · 不扫描局域网，不发送查询，不上传文件</p>
+    </header>
+
+    <section class="input-panel" aria-labelledby="input-title">
+      <div class="section-heading">
+        <div><span class="step">01</span><h2 id="input-title">录制输入</h2></div>
+        <div class="actions">
+          <label class="button secondary" for="trace-file">加载 JSONL</label>
+          <input id="trace-file" type="file" accept=".jsonl,.json,.txt,application/x-ndjson,application/json,text/plain">
+          <button id="sample" class="secondary" type="button">填入示例</button>
+        </div>
+      </div>
+      <label class="sr-only" for="trace-input">每行一个 JSON 命令</label>
+      <textarea id="trace-input" spellcheck="false" aria-describedby="input-help" placeholder='{"kind":"browse","at_ms":0,"scope":"demo","name":"_http._tcp.local."}'></textarea>
+      <div class="input-footer">
+        <p id="input-help">保留原始时间顺序。config 首帧恢复随机种子；无 config 时固定为 1。上限 8 MiB / 10000 帧。</p>
+        <button id="run" type="button">运行回放 <span aria-hidden="true">↗</span></button>
+      </div>
+    </section>
+
+    <p id="status" class="status" role="status" aria-live="polite">正在加载 MoonBit 回放核心…</p>
+    <section class="results" aria-label="回放结果">
+      <section class="result-panel" aria-labelledby="events-title">
+        <div class="section-heading"><div><span class="step">02</span><h2 id="events-title">事件</h2></div><span id="event-count" class="count">0</span></div>
+        <p class="hint">服务状态和订阅、诊断信息。时间来自录制。</p>
+        <div id="events" class="output" aria-label="事件列表"><p class="empty">运行回放后在这里查看事件。</p></div>
+      </section>
+      <section class="result-panel" aria-labelledby="outbound-title">
+        <div class="section-heading"><div><span class="step">03</span><h2 id="outbound-title">待发查询</h2></div><span id="outbound-count" class="count">0</span></div>
+        <p class="hint">引擎生成的 outbound，仅展示，不实际发送。</p>
+        <div id="outbound" class="output" aria-label="待发查询列表"><p class="empty">还没有查询输出。</p></div>
+      </section>
+    </section>
+    <footer>纯核心回放 · 原始 TXT 字节以 hex 保留 · 每次运行使用独立引擎</footer>
+  </main>
+</body>
+</html>

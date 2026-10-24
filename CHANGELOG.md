@@ -10,6 +10,7 @@
 - 指定 IPv4 接口的 Native 组播适配、共享 5353 绑定、入站元数据、异步 Browser 和取消释放。
 - browse/resolve/doctor/replay CLI、实时 JSONL、保存原始报文/时钟/种子的录制及确定性回放。
 - 公开 API 示例、动态发现端口的受控 HTTP 示例、Windows 独立 zeroconf 进程互通证据、固定工具链与轻量 CI。
+- 使用同一纯核心的浏览器离线回放示例，支持加载 JSONL、恢复种子和查看事件/待发查询。
 
 ### 已修复
 

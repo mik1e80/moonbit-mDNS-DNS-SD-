@@ -32,6 +32,10 @@ jobs:
         run: moon build cmd/native_spike cmd/transport_spike cmd/moondiscover examples/http_connect examples/watch_events tests/native_cancel --target native
       - name: Consume public APIs from a separate local workspace
         run: python3 tests/interop/consumer_smoke.py --moon-home "$HOME/.moon"
+      - name: Compile and verify offline browser replay callback
+        run: |
+          moon build examples/browser_replay --target js
+          node examples/browser_replay/smoke.cjs _build/js/debug/build/examples/browser_replay/browser_replay.js
   windows-native-build:
     runs-on: windows-latest
     timeout-minutes: 10

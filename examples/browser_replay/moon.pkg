@@ -1,0 +1,9 @@
+import {
+  "mik1e80/dnssd",
+  "moonbitlang/core/json",
+  "moonbitlang/core/encoding/utf8",
+}
+
+supported_targets = "+js"
+
+pkgtype(kind: "executable")

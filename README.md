@@ -39,6 +39,7 @@ Native 包 `mik1e80/dnssd/src/native` 的 `Browser` 连接系统 socket 和时�
 - [连续事件示例](examples/watch_events/main.mbt)：通过异步 stdout 输出服务事件。
 - [HTTP 连接示例](examples/http_connect/main.mbt)：按 TXT demo token 选择受控服务，使用发现的地址和动态端口请求演示端点。
 - [可离线回放的实网样本](fixtures/live-20261024.jsonl)：从录制中筛出本项目合成服务的报文，保留时钟与命令帧。
+- [浏览器离线回放](examples/browser_replay/README.md)：本地粘贴或加载 JSONL，查看同一 MoonBit 核心产生的事件与待发查询。
 
 ## 当前边界
 
