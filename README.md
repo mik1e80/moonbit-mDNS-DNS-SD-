@@ -16,6 +16,8 @@ moon add mik1e80/dnssd@0.1.0
 
 [v0.1.0 源码标签](https://github.com/mik1e80/moonbit-mDNS-DNS-SD-/tree/v0.1.0)对应发布提交 `2b922d6`。已完成无源码映射的[注册表包消费验证](docs/evidence/consumer-registry-20261024.json)，下载归档与发布归档的 SHA256 一致。
 
+[GitHub Release](https://github.com/mik1e80/moonbit-mDNS-DNS-SD-/releases/tag/v0.1.0)同时提供已校验的模块 ZIP。报名材料另见[三个业务场景](docs/submission.md)、[演示脚本](docs/demo-script.md)与[报名准备状态](docs/registration-status.md)。
+
 ## 快速开始
 
 Windows 需要 Visual Studio C++ 工具和 Windows SDK。项目使用固定工具链，不替换全局 MoonBit：

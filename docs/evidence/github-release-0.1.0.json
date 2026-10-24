@@ -1,0 +1,9 @@
+{
+  "release_url": "https://github.com/mik1e80/moonbit-mDNS-DNS-SD-/releases/tag/v0.1.0",
+  "tag": "v0.1.0",
+  "source_commit": "2b922d6ac0db5c6261aea917545776dfc488b1ec",
+  "asset_url": "https://github.com/mik1e80/moonbit-mDNS-DNS-SD-/releases/download/v0.1.0/mik1e80-dnssd-0.1.0.zip",
+  "asset_sha256": "817c7abe72ca359cfac067e751db30a4f17c4fef8c76fa02b77dcd31f668a71b",
+  "server_asset_digest": "sha256:817c7abe72ca359cfac067e751db30a4f17c4fef8c76fa02b77dcd31f668a71b",
+  "asset_bytes": 132169
+}
