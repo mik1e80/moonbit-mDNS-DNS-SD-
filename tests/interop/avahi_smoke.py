@@ -8,6 +8,7 @@ from datetime import datetime, timezone
 import hashlib
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
+import os
 from pathlib import Path
 import platform
 import socket
@@ -22,6 +23,12 @@ ROOT = Path(__file__).resolve().parents[2]
 BUILD = ROOT / '_build/native/debug/build'
 
 
+def binary(path):
+    plain = BUILD / path
+    suffixed = plain.with_name(plain.name + '.exe')
+    return suffixed if suffixed.is_file() else plain
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', type=Path, required=True)
@@ -31,7 +38,7 @@ def main():
     assert ipv4 and not ipv4.startswith('127.'), 'active IPv4 interface required'
     index = socket.if_nametoindex(interface)
     token = 'moondiscover-' + uuid.uuid4().hex[:12]
-    cli = BUILD / 'cmd/moondiscover/moondiscover'
+    cli = binary('cmd/moondiscover/moondiscover')
     trace = ROOT / '.tools' / (token + '.jsonl')
     report = {
         'date': datetime.now(timezone.utc).isoformat(),
@@ -43,6 +50,8 @@ def main():
         'limits': ['same Linux VM using an independent Avahi daemon',
                    'IPv4 multicast; not second-device interoperability'],
         'checks': {},
+        'ci_run_url': os.environ.get('GITHUB_SERVER_URL', '') + '/' + os.environ.get('GITHUB_REPOSITORY', '')
+            + '/actions/runs/' + os.environ.get('GITHUB_RUN_ID', ''),
     }
     requests, events, processes = [], [], []
     resolved, updated, removed = threading.Event(), threading.Event(), threading.Event()
@@ -74,7 +83,7 @@ def main():
                            dbus.ByteArray(b'binary=\x00\xff')], signature='ay')
 
     def run(path, *arguments, timeout=6):
-        return subprocess.run([str(BUILD / path), *arguments], capture_output=True, text=True, timeout=timeout)
+        return subprocess.run([str(binary(path)), *arguments], capture_output=True, text=True, timeout=timeout)
 
     try:
         bus = dbus.SystemBus()
@@ -114,7 +123,7 @@ def main():
 
         reader = threading.Thread(target=read_events)
         reader.start()
-        client = subprocess.Popen([str(BUILD / 'examples/http_connect/http_connect'), ipv4, token],
+        client = subprocess.Popen([str(binary('examples/http_connect/http_connect')), ipv4, token],
                                   stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         processes.append(client)
         got_resolution = resolved.wait(4)
@@ -162,13 +171,16 @@ def main():
                 child.kill()
                 child.wait()
         if group is not None:
-            group.Free()
+            try:
+                group.Free()
+            except dbus.DBusException as error:
+                report['cleanup_error'] = str(error)
         http.shutdown()
         http.server_close()
         server_thread.join(timeout=2)
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(json.dumps(report, indent=2, ensure_ascii=False) + '\n', encoding='utf-8')
-    passed = len(report['checks']) == 8 and all(report['checks'].values()) and 'error' not in report
+    passed = len(report['checks']) == 8 and all(report['checks'].values()) and 'error' not in report and 'cleanup_error' not in report
     print(json.dumps({'passed': passed, 'checks': report['checks'], 'error': report.get('error')}))
     return 0 if passed else 1
 

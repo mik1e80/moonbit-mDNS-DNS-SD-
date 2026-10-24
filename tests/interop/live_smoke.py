@@ -20,7 +20,9 @@ BUILD = ROOT / "_build/native/debug/build"
 
 
 def binary(path):
-    return BUILD / (path + (".exe" if platform.system() == "Windows" else ""))
+    plain = BUILD / path
+    suffixed = plain.with_name(plain.name + '.exe')
+    return suffixed if suffixed.is_file() else plain
 
 
 def main():

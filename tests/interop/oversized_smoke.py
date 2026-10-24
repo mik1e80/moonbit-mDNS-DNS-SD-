@@ -55,8 +55,9 @@ def main():
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
     binary = ROOT / "_build/native/debug/build/cmd/moondiscover/moondiscover"
-    if platform.system() == "Windows":
-        binary = binary.with_suffix(".exe")
+    suffixed = binary.with_name(binary.name + '.exe')
+    if suffixed.is_file():
+        binary = suffixed
     token = ("oversized-" + uuid.uuid4().hex[:10]).encode()
     target = ("224.0.0.251", 5353)
     git = ["git", "-c", "safe.directory=" + ROOT.as_posix()]

@@ -37,3 +37,4 @@ jobs:
         with:
           name: linux-avahi-evidence
           path: .tools/avahi-linux.json
+          include-hidden-files: true

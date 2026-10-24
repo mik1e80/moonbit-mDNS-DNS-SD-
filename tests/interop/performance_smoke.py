@@ -47,8 +47,9 @@ def main():
     parser.add_argument('--timeout-seconds', type=int, default=90)
     args = parser.parse_args()
     binary = ROOT / '_build/native/release/build/tests/perf_probe/perf_probe'
-    if os.name == 'nt':
-        binary = binary.with_suffix('.exe')
+    suffixed = binary.with_name(binary.name + '.exe')
+    if suffixed.is_file():
+        binary = suffixed
     report = {
         'date': datetime.now(timezone(timedelta(hours=8))).isoformat(),
         'source_commit': subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip(),
