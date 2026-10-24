@@ -35,6 +35,7 @@ pub fn Engine::resolve(
     id,
     scope,
     service_type,
+    browse_name: service_type,
     instance: Some(instance),
     deadline: Some(now + timeout_ms.to_int64()),
   })

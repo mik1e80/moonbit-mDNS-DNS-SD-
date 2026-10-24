@@ -36,6 +36,7 @@ struct Subscription {
   id : Int32
   scope : String
   service_type : @model.DnsName
+  browse_name : @model.DnsName
   instance : @model.DnsName?
   deadline : Int64?
 }
@@ -115,7 +116,7 @@ fn Engine::emit(self : Engine, event : Event) -> Unit {
 }
 
 ///|
-pub fn valid_service_type(name : @model.DnsName) -> Bool {
+fn valid_base_service_type(name : @model.DnsName) -> Bool {
   let labels = name.labels()
   if labels.length() != 3 {
     return false
@@ -155,6 +156,36 @@ pub fn valid_service_type(name : @model.DnsName) -> Bool {
 }
 
 ///|
+fn browse_base(name : @model.DnsName) -> @model.DnsName? {
+  if valid_base_service_type(name) {
+    return Some(name)
+  }
+  let labels = name.labels()
+  guard labels.length() == 5 else { return None }
+  let marker = @model.DnsName::from_labels([labels[1]]) catch {
+    _ => return None
+  }
+  let expected = @model.DnsName::from_labels([b"_sub"]) catch {
+    _ => return None
+  }
+  guard marker.same_name(expected) else { return None }
+  let base = @model.DnsName::from_labels([labels[2], labels[3], labels[4]]) catch {
+    _ => return None
+  }
+  if valid_base_service_type(base) {
+    Some(base)
+  } else {
+    None
+  }
+}
+
+///|
+/// Accept a base local service type or an opaque subtype._sub.base name.
+pub fn valid_service_type(name : @model.DnsName) -> Bool {
+  browse_base(name) is Some(_)
+}
+
+///|
 fn is_instance(
   instance : @model.DnsName,
   service_type : @model.DnsName,
@@ -177,7 +208,9 @@ pub fn Engine::browse(
   now : Int64,
 ) -> Int32 raise {
   guard !self.closed else { raise Closed }
-  guard valid_service_type(service_type) else { raise InvalidServiceType }
+  guard browse_base(service_type) is Some(base) else {
+    raise InvalidServiceType
+  }
   guard scope.length() > 0 && scope.length() <= 256 else {
     raise ResourceLimit("scope length outside 1..256")
   }
@@ -191,7 +224,8 @@ pub fn Engine::browse(
   self.interests.push({
     id,
     scope,
-    service_type,
+    service_type: base,
+    browse_name: service_type,
     instance: None,
     deadline: None,
   })
@@ -303,7 +337,8 @@ fn removal_reason(
   if vanished {
     for removal in removals {
       if removal.scope == snapshot.scope &&
-        removal.record.name.same_name(snapshot.service_type) &&
+        browse_base(removal.record.name) is Some(base) &&
+        base.same_name(snapshot.service_type) &&
         removal.record.data is @wire.Ptr(instance) &&
         instance.same_name(snapshot.instance) {
         return removal.reason
@@ -361,7 +396,7 @@ fn Engine::reconcile(
       }
       continue
     }
-    for ptr in self.cache.records(sub.scope, sub.service_type, 12) {
+    for ptr in self.cache.records(sub.scope, sub.browse_name, 12) {
       if ptr.record.data is @wire.Ptr(instance) {
         if !is_instance(instance, sub.service_type) {
           self.emit(

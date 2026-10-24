@@ -77,7 +77,7 @@ fn Engine::sync_queries(self : Engine) -> Unit {
       want({ scope: sub.scope, name: instance, rr_type: 33, })
       want({ scope: sub.scope, name: instance, rr_type: 16, })
     } else {
-      want({ scope: sub.scope, name: sub.service_type, rr_type: 12, })
+      want({ scope: sub.scope, name: sub.browse_name, rr_type: 12, })
     }
   }
   for service in self.services {
