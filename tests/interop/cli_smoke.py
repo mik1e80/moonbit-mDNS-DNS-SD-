@@ -31,7 +31,19 @@ def main():
     config.write_text('{"kind":"config","format":1,"seed":4294967295,"at_ms":0}\n', encoding="utf-8")
     configured = run("replay", "--file", str(config))
     assert configured.returncode == 0 and json.loads(configured.stdout)["seed"] == 4294967295
-    print(json.dumps({"deterministic_replay": True, "resolved_endpoint": True, "expiry_events": True, "invalid_args_exit": True, "help_version": True}))
+    live = ROOT / "fixtures/live-20261024.jsonl"
+    replay_a = run("replay", "--file", str(live))
+    replay_b = run("replay", "--file", str(live))
+    assert replay_a.returncode == replay_b.returncode == 0
+    assert replay_a.stdout == replay_b.stdout
+    evidence = json.loads((ROOT / "docs/evidence/windows-live-20261024.json").read_text(encoding="utf-8"))
+    own_events = []
+    for line in replay_a.stdout.splitlines():
+        event = json.loads(line)
+        if event.get("service", {}).get("instance", "").startswith(evidence["demo"] + "."):
+            own_events.append({k: v for k, v in event.items() if k != "at_ms"})
+    assert own_events == evidence["replay_service_events"]
+    print(json.dumps({"deterministic_replay": True, "resolved_endpoint": True, "expiry_events": True, "invalid_args_exit": True, "help_version": True, "recorded_live_events_match": True}))
 
 
 if __name__ == "__main__":
