@@ -28,6 +28,8 @@ pub using @engine {type Engine}
 
 pub using @engine {type EngineError}
 
+pub using @engine {type EngineStats}
+
 pub using @engine {type Event}
 
 pub using @model {type InputError}

@@ -39,6 +39,17 @@ pub fn Engine::poll_event(Self) -> Event?
 pub fn Engine::poll_outbound(Self) -> Outbound?
 pub fn Engine::resolve(Self, @model.DnsName, String, Int64, timeout_ms? : Int32) -> Int32 raise
 pub fn Engine::snapshots(Self) -> Array[ServiceSnapshot]
+pub fn Engine::stats(Self) -> EngineStats
+
+pub struct EngineStats {
+  cached_records : Int32
+  services : Int32
+  subscriptions : Int32
+  queued_events : Int32
+  query_jobs : Int32
+  queued_questions : Int32
+  dropped_events : Int64
+}
 
 pub(all) enum Event {
   Seen(ServiceSnapshot)
