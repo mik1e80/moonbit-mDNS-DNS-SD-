@@ -36,6 +36,8 @@ jobs:
         run: |
           moon build examples/browser_replay --target js
           node examples/browser_replay/smoke.cjs _build/js/debug/build/examples/browser_replay/browser_replay.js
+      - name: Three targeted semantic fault injections
+        run: python3 tests/interop/mutation_smoke.py --moon-home "$HOME/.moon" --output .tools/mutation-ci.json
   windows-native-build:
     runs-on: windows-latest
     timeout-minutes: 10

@@ -1,0 +1,39 @@
+name: Controlled Linux Avahi interoperability
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/linux-interop.yml
+      - tests/interop/avahi_smoke.py
+permissions:
+  contents: read
+jobs:
+  avahi-live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install fixed MoonBit and independent publisher
+        shell: bash
+        run: |
+          set -euo pipefail
+          version=$(python3 -c 'import json; print(json.load(open("toolchain.json"))["release"])')
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash -s -- "$version"
+          echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
+          sudo apt-get update -qq
+          sudo apt-get install -y avahi-daemon python3-dbus
+          sudo systemctl start dbus avahi-daemon
+          avahi-daemon --version
+      - name: Build only live experiment entry points
+        run: |
+          moon update
+          moon build cmd/moondiscover examples/http_connect tests/native_cancel --target native
+      - name: Observe actual IPv4 multicast HTTP update goodbye and replay
+        run: /usr/bin/python3 tests/interop/avahi_smoke.py --output .tools/avahi-linux.json
+      - name: Retain controlled report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-avahi-evidence
+          path: .tools/avahi-linux.json
