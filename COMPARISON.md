@@ -1,12 +1,12 @@
-# 生态对比与新增价值
+# 生态边界与新增价值
 
-本项目不声称是首个 MoonBit mDNS 实现。
+本项目不声称是首个 MoonBit mDNS 实现。下表是立项时固定源码考察得出的功能边界；来源、版本、许可与复用结论见 [依赖决策](docs/dependency-decision.md)，不用于声明其他项目当前版本缺少某项能力。
 
-| 项目 | 已知交集 | 本项目计划补充 |
+| 考察对象 | 已知交集 | MoonDiscover 已实现的相邻工作 |
 | --- | --- | --- |
-| moonbit-community/rtc.mbt 的 mdns | `.local` 主机 A/AAAA 查询与缓存 | PTR/SRV/TXT 服务聚合、连续状态与来源范围 |
-| jinshengmeng46/moon-dns-stub | DNS wire 和普通 Native resolver | mDNS 查询调度、缓存高位语义和 DNS-SD 生命周期 |
-| moonbitlang/async | Native UDP 与组播能力 | 传输适配与系统元数据，协议仍由本项目核心处理 |
-| python-zeroconf / Avahi | 独立 DNS-SD 实现 | 作为互通对端，不隐藏调用它们代替库逻辑 |
+| moonbit-community/rtc.mbt 的 mdns | `.local` 主机 A/AAAA 查询与缓存 | PTR/SRV/TXT 服务聚合、部分/完整状态与范围隔离 |
+| jinshengmeng46/moon-dns-stub | DNS wire 和普通 Native resolver | mDNS QM 调度、class 高位语义、goodbye/flush 宽限和连续生命周期 |
+| moonbitlang/async | Native socket 与异步任务 | 指定接口的组播元数据适配、取消释放；协议状态由本项目纯核心处理 |
+| python-zeroconf / Avahi | 独立 DNS-SD 实现 | python-zeroconf 作为受控实网对端；未隐藏调用其发现逻辑，Avahi 尚无实测 |
 
-这些是选题边界，不代表本项目已经实现相应能力。固定源码版本、许可和复用结论记录于 M0 依赖决策。
+项目当前价值在于可注入时间和输入的纯核心、带范围与完整性信息的稳定事件、Native 实网接入，以及能把实网观察转为确定性回放的录制链路。Windows 已有独立进程发布到动态端口 HTTP 请求的证据；Linux 实网、第二设备互通与更完整规范覆盖仍待补充。
