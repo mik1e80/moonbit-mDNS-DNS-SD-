@@ -1,0 +1,27 @@
+# 有界性能与资源观察
+
+这是 Windows Native release 单机实测，输入为 50/200/500 个合成服务，每个服务四条已解码记录，分批摄入后重复一次，再加速运行 3600 个虚拟时间 tick，最后验证全部到期释放。不是长期实网压力结论，也不测 wire 解码速度。
+
+| 服务数 | 初次摄入 ms | 重复输入 ms | 一小时虚拟时间 ms | 采样进程峰值 MiB | 缓存记录峰值 | 事件峰值 |
+| --- | --- | --- | --- | --- | --- | --- |
+| 50 | 低于时钟分辨率 | 低于时钟分辨率 | 16 | 9.07 | 200 | 100 |
+| 200 | 32 | 47 | 31 | 9.19 | 800 | 400 |
+| 500 | 219 | 547 | 78 | 9.86 | 2000 | 1000 |
+
+完整主机、源码状态、二进制散列和计数在 [优化后报告](evidence/performance-optimized-20261024.json)。每个规模只运行一次，测量会随机器负载变化。内部毫秒时钟存在分辨率限制，报告中的 0 不表示没有成本。
+
+初次观察中，500 服务的摄入和重复输入分别为 15203/35625ms。名称比较反复构造规范化字节键造成大量临时分配；将不可变名称的 ASCII 折叠键缓存后，在同组有界输入上得到上述结果。原始 [200/500 服务基线](evidence/performance-baseline-20261024.json)保留了测量辅助程序修正期间的 dirty 状态，不将它写成干净发布版性能。
+
+所有规模均满足：完整服务数符合输入、重复响应不新增内容事件、不增长缓存、虚拟到期后记录和服务归零、事件丢失计数为零。较大规模会产生有界发包队列和单包 Known-Answer 限制诊断，报告保留其数量，不能据此宣称所有查询均成功发出。
+
+逻辑条目数来自公开 `Engine.stats()`，与 RSS 分开。Windows 内存为每 10ms 采样的进程 peak working set，包含运行时、输入生成和协议状态；不是库对象的精确字节占用，也不保证捕获进程退出前最后一个峰值。API 定义见 [Microsoft PROCESS_MEMORY_COUNTERS](https://learn.microsoft.com/en-us/windows/win32/api/psapi/ns-psapi-process_memory_counters)。Linux 脚本对应采样 `/proc/<pid>/status` 的 VmHWM。
+
+复现：
+
+```powershell
+.\scripts\moon.ps1 build tests/perf_probe --target native --release --frozen
+python tests/interop/performance_smoke.py --output .tools/performance-local.json
+python tests/interop/mutation_smoke.py --output .tools/mutation-local.json
+```
+
+[故障注入报告](evidence/mutation-20261024.json)另验证三个变体：忽略 cache-flush、PTR 即完整、拆分实例内点。每项先执行原代码的单个相关用例，再在临时副本中注入错误；三项均编译并被断言检出，原始 checkout 对应文件未改变。不把编译失败当成有效检出。
