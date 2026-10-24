@@ -1,6 +1,6 @@
 # 首版范围与支持状态
 
-状态日期：2026-10-24。模块目标版本为 `0.1.0`，CLI 当前标为 `0.1.0-dev`；填写版本字段不等于已经发布。
+状态日期：2026-10-24。模块与 CLI 版本均为 `0.1.0`，已发布 Mooncakes，源码标签为 `v0.1.0`。发布与注册表包消费证据见 [验证记录](verification.md)。
 
 | 层 | 当前实现 | 证据与边界 |
 | --- | --- | --- |
@@ -11,8 +11,8 @@
 | 核心后端 | 系统无关的 Engine 与 Replay | JS 冒烟通过；部分引擎用例在 Wasm/Native 通过，未全量运行所有后端 |
 | Windows 实时网络 | 指定活动 IPv4 接口、5353 共享绑定、入站接口/目标地址元数据、异步轮询与取消释放 | 同机独立 python-zeroconf 进程实网闭环；无第二设备证据 |
 | Linux Native | 条件编译的 socket 适配代码 | CI 编译；尚无 Linux 实网互通证据 |
-| CLI 与示例 | browse、resolve、doctor、replay、JSONL 录制；事件示例与动态端口 HTTP 示例 | 实际二进制离线冒烟与 Windows 受控实网实验 |
-| 发布 | 固定工具链、GitHub 轻量 CI、API 文档、样本与来源 | Mooncakes 发布及已发布包仓库外消费仍待完成 |
+| CLI 与示例 | browse、resolve、doctor、replay、JSONL 录制；事件、HTTP 和浏览器离线回放示例 | 实际二进制离线冒烟、Node 回调与真实浏览器检查、Windows 实网实验 |
+| 发布 | 固定工具链、GitHub 轻量 CI、API 文档、样本与来源、Mooncakes 0.1.0 | 无源码映射的独立工程安装后调用核心、编译 Native 并打开/关闭 socket；下载归档散列匹配 |
 
 ## 传输范围
 

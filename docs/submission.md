@@ -1,6 +1,6 @@
 # MoonDiscover 项目说明
 
-仓库：[mik1e80/moonbit-mDNS-DNS-SD-](https://github.com/mik1e80/moonbit-mDNS-DNS-SD-)。模块名：`mik1e80/dnssd`。许可：Apache-2.0。状态：2026-10-24，发布准备中；不宣称已完成原实施计划的所有平台与 RFC 验收。
+仓库：[mik1e80/moonbit-mDNS-DNS-SD-](https://github.com/mik1e80/moonbit-mDNS-DNS-SD-)。模块名：`mik1e80/dnssd`。许可：Apache-2.0。状态：2026-10-24，已发布 0.1.0；不宣称已完成原实施计划的所有平台与 RFC 验收。
 
 ## 解决的问题
 
@@ -27,4 +27,4 @@ MoonDiscover 用 MoonBit 实现发现所需的报文、缓存、查询与状态�
 
 当前 Windows 证据来自同一台机器上的独立进程，尚无第二设备、Avahi 或 Linux 实网结果；Linux Native 已有 CI 编译。实时网络限定 IPv4 QM 组播，单播接收明确排除。未实现发布者、IPv6 组播、服务子类型、NSEC 负缓存、多包 Known-Answer 和完整 SRV 优先级/权重选择。
 
-Mooncakes 发布与已发布包的仓库外消费仍待完成，不能将本地源码消费当作注册表包验证。范围与证据持续以 [支持状态](SCOPE.md) 和实际 Actions/发布记录为准。
+Mooncakes 0.1.0 已实际发布，[源码标签](https://github.com/mik1e80/moonbit-mDNS-DNS-SD-/tree/v0.1.0)对应 `2b922d6`。无 `moon.work` 源码映射的新工程已从注册表安装、运行公开核心 API、编译 Native 并打开/关闭 socket；归档散列及全部 116 个安装文件匹配。详见[发布记录](evidence/release-0.1.0-20261024.json)和[消费记录](evidence/consumer-registry-20261024.json)。

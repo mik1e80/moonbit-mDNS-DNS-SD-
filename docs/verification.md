@@ -12,7 +12,7 @@
 
 提交前执行 `moon info` 和 `moon fmt`，检查公开 `.mbti`；复现命令见 [开发文档](development.md)。原始 zeroconf 报文来源见 [fixtures](../fixtures/README.md)。
 
-浏览器示例的编译回调另有 Node 轻量检查，真实录制的六个服务事件与公开报告逐项一致。真实浏览器还检查了内置查询示例和实际报文产生的 seen/resolved/unavailable/removed 列表；页面仅展示待发查询，不发送网络请求。
+浏览器示例的编译回调另有 Node 轻量检查，真实录制的六个服务事件与公开报告逐项一致。真实浏览器还检查了内置查询示例和实际报文产生的 seen/resolved/unavailable/removed 列表；页面仅展示待发查询，不把它们发往网络。
 
 ## Windows 实网闭环
 
@@ -39,10 +39,18 @@
 
 [轻量工作流](../.github/workflows/ci.yml) 在 Linux 运行核心 JS 冒烟并编译 Native 探针、CLI、HTTP/事件示例和取消验证程序；Windows 编译这些入口并运行离线 CLI 冒烟。普通 runner 不进行局域网实验。
 
-提交 `f2baff7` 的 [39989994807](https://github.com/mik1e80/moonbit-mDNS-DNS-SD-/actions/runs/39989994807) 两项检查成功。该链接证明对应提交的检查成功；后续变动以各自 Actions 记录为准。
+发布源码 `2b922d6` 的 [40077915645](https://github.com/mik1e80/moonbit-mDNS-DNS-SD-/actions/runs/40077915645) 两项检查成功，涵盖新增移除原因回归、仓库外公开 API 消费和浏览器回放回调。该链接证明对应发布源码的检查成功；后续文档更新以各自 Actions 记录为准。
 
 ## 结论的范围
 
 Windows 证据是同机独立进程互通，没有第二设备、Avahi 或 Linux 实网证据。Linux Native 只有 CI 编译证据。没有完整 RFC 审计、所有平台全量测试或长时间压力验证。
 
-Mooncakes 发布与已发布包的仓库外消费尚待记录。源码工作区外的本地消费与注册表发布包消费是两种不同证据，前者不能代替后者。
+## Mooncakes 与独立消费
+
+`mik1e80/dnssd@0.1.0` 发布命令返回 `200 OK`，源码为干净提交 `2b922d6ac0db5c6261aea917545776dfc488b1ec`，GitHub 标签为 `v0.1.0`。[发布记录](evidence/release-0.1.0-20261024.json)保存工具链、归档散列、文件数和对应 CI。
+
+[注册表消费报告](evidence/consumer-registry-20261024.json)来自新建的仓库外工程，无 `moon.work` 覆盖，依赖固定版本 0.1.0。它从官方注册表下载后，JS 核心 API、Native 编译和实际 socket 打开/关闭三项均通过。下载 ZIP 的 SHA256 为 `817c7abe72ca359cfac067e751db30a4f17c4fef8c76fa02b77dcd31f668a71b`，与发布归档相同，安装的 116 个文件逐一匹配。
+
+复现：`python tests/interop/consumer_smoke.py --mode registry --version 0.1.0 --interface <活动IPv4> --output .tools/consumer-registry.json`。索引过旧时先运行 `moon update`。本地 source 模式与注册表模式仍分别记录，前者不代替后者。
+
+标签与发布归档固定在发布源码提交；本页及发布完成后才产生的消费证据位于其后的文档提交中，不改写已发布版本。
