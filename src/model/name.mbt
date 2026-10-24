@@ -7,6 +7,7 @@ pub suberror InputError {
 /// DNS labels as immutable octets. Never split an instance label on dots.
 pub struct DnsName {
   priv labels : Array[Bytes]
+  priv key : Bytes
 } derive(Debug)
 
 ///|
@@ -21,7 +22,18 @@ pub fn DnsName::from_labels(labels : Array[Bytes]) -> DnsName raise InputError {
       raise InvalidInput("mDNS name exceeds 255 octets plus terminator")
     }
   }
-  { labels: labels.copy(), }
+  let folded : Array[Byte] = []
+  for label in labels {
+    folded.push(label.length().to_byte())
+    for byte in label {
+      let value = byte.to_int()
+      folded.push(
+        (if value >= 65 && value <= 90 { value + 32 } else { value }).to_byte(),
+      )
+    }
+  }
+  folded.push(0)
+  { labels: labels.copy(), key: Bytes::makei(folded.length(), i => folded[i]), }
 }
 
 ///|
@@ -52,18 +64,7 @@ pub fn DnsName::to_wire(self : DnsName) -> Bytes {
 ///|
 /// A collision-free wire key with ASCII case folding only.
 pub fn DnsName::canonical_key(self : DnsName) -> Bytes {
-  let wire = self.to_wire()
-  let out = wire.to_array()
-  let mut offset = 0
-  for label in self.labels {
-    offset += 1
-    for b in label {
-      let n = b.to_int()
-      out[offset] = (if n >= 65 && n <= 90 { n + 32 } else { n }).to_byte()
-      offset += 1
-    }
-  }
-  Bytes::makei(out.length(), i => out[i])
+  self.key
 }
 
 ///|
