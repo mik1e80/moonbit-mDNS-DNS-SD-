@@ -23,7 +23,9 @@ test "smoke: subtype queries keep base instance identity and filter membership" 
   assert_true(snapshot.service_type.same_name(records[0].name))
   assert_true(snapshot.instance.same_name(records[1].name))
   assert_eq(engine.snapshots().length(), 1)
-  assert_false(engine.snapshots().any(s => s.instance.same_name(plain_peer[1].name)))
+  assert_false(
+    engine.snapshots().any(s => s.instance.same_name(plain_peer[1].name)),
+  )
   engine.ingest_message(message([{ ..membership, ttl: 0, }]), "wifi", 400)
   engine.advance(1400)
   assert_true(engine.poll_event() is Some(@engine.Removed(_, "goodbye")))

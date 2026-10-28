@@ -2,7 +2,10 @@
 test "smoke: engine drains and cancels large known-answer bursts atomically" {
   let records = fixture()
   let engine = @engine.Engine::new(query_capacity=1024, event_capacity=1024)
-  let interrupted = @engine.Engine::new(query_capacity=1024, event_capacity=1024)
+  let interrupted = @engine.Engine::new(
+    query_capacity=1024,
+    event_capacity=1024,
+  )
   let id = engine.browse(records[0].name, "wifi", 0)
   let other_id = interrupted.browse(records[0].name, "wifi", 0)
   let all : Array[@wire.Record] = []
@@ -39,7 +42,9 @@ test "smoke: engine drains and cancels large known-answer bursts atomically" {
   assert_true(engine.poll_outbound() is None)
   engine.close()
   interrupted.advance(120)
-  guard interrupted.poll_outbound() is Some(started) else { fail("no cancellation burst") }
+  guard interrupted.poll_outbound() is Some(started) else {
+    fail("no cancellation burst")
+  }
   assert_eq(@wire.decode(started.bytes).flags & 0x0200, 0x0200)
   assert_true(interrupted.stats().queued_datagrams > 0)
   interrupted.cancel(other_id, 120)

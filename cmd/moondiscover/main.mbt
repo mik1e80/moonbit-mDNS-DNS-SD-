@@ -6,7 +6,7 @@ async fn write_line(text : String) -> Unit {
 ///|
 async fn usage() -> Unit {
   write_line(
-    "MoonDiscover 0.1.0\n  browse --interface IPV4 --service _http._tcp.local. [--duration-ms 5000] [--record trace.jsonl]\n  resolve --interface IPV4 --instance 'Demo._http._tcp.local.' [--duration-ms 5000] [--record trace.jsonl]\n  doctor --interface IPV4\n  replay --file trace.jsonl [--seed 1]\nNames support DNS presentation escaping. JSONL is written to stdout.",
+    "MoonDiscover 0.2.0-dev\n  browse --interface IPV4 --service _http._tcp.local. [--duration-ms 5000] [--record trace.jsonl]\n  resolve --interface IPV4 --instance 'Demo._http._tcp.local.' [--duration-ms 5000] [--record trace.jsonl]\n  doctor --interface IPV4\n  replay --file trace.jsonl [--seed 1]\nNames support DNS presentation escaping. JSONL is written to stdout.",
   )
 }
 
@@ -77,7 +77,7 @@ async fn run_command(args : Array[String]) -> Unit {
     return
   }
   if args[1] == "--version" {
-    write_line("0.1.0")
+    write_line("0.2.0-dev")
     return
   }
   let options = options(args)
