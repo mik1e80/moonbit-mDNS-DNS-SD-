@@ -6,8 +6,18 @@ on:
     paths:
       - .github/workflows/linux-interop.yml
       - tests/interop/avahi_smoke.py
+      - src/**
+      - cmd/**
+      - examples/**
+      - tests/native_cancel/**
+      - moon.mod
+      - moon.pkg
+      - toolchain.json
 permissions:
   contents: read
+concurrency:
+  group: avahi-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   avahi-live:
     runs-on: ubuntu-latest

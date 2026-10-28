@@ -40,6 +40,7 @@ def main():
     token = 'moondiscover-' + uuid.uuid4().hex[:12]
     cli = binary('cmd/moondiscover/moondiscover')
     trace = ROOT / '.tools' / (token + '.jsonl')
+    trace.parent.mkdir(parents=True, exist_ok=True)
     report = {
         'date': datetime.now(timezone.utc).isoformat(),
         'source_commit': subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip(),
@@ -56,6 +57,30 @@ def main():
     requests, events, processes = [], [], []
     resolved, updated, removed = threading.Event(), threading.Event(), threading.Event()
     group = None
+    browse = None
+    reader = None
+    browse_stdout = []
+    reader_errors = []
+    stdout_bytes = 0
+    stdout_truncated = False
+
+    def save_browse_result():
+        if browse is None:
+            return
+        if reader is not None:
+            reader.join(timeout=2)
+        report['browse_process'] = {
+            'exit_code': browse.returncode,
+            'stdout': ''.join(browse_stdout),
+            'stdout_truncated': stdout_truncated,
+            'stderr': browse.stderr.read() if browse.poll() is not None else 'process still running',
+            'reader_errors': reader_errors,
+        }
+        report['recording'] = {
+            'exists': trace.is_file(),
+            'bytes': trace.stat().st_size if trace.is_file() else None,
+            'sha256': hashlib.sha256(trace.read_bytes()).hexdigest() if trace.is_file() else None,
+        }
 
     class Handler(BaseHTTPRequestHandler):
         def do_GET(self):
@@ -110,8 +135,19 @@ def main():
         processes.append(browse)
 
         def read_events():
+            nonlocal stdout_bytes, stdout_truncated
             for line in browse.stdout:
-                event = json.loads(line)
+                if stdout_bytes + len(line.encode('utf-8')) <= 262144:
+                    browse_stdout.append(line)
+                    stdout_bytes += len(line.encode('utf-8'))
+                else:
+                    stdout_truncated = True
+                try:
+                    event = json.loads(line)
+                except ValueError as error:
+                    if len(reader_errors) < 8:
+                        reader_errors.append(str(error))
+                    continue
                 if event.get('service', {}).get('instance_label') != token:
                     continue
                 event['observed_ms'] = round((time.monotonic() - started) * 1000)
@@ -135,7 +171,9 @@ def main():
         got_goodbye = removed.wait(3)
         client_out, client_err = client.communicate(timeout=8)
         browse.wait(timeout=13)
-        reader.join(timeout=2)
+        save_browse_result()
+        if browse.returncode != 0 or not trace.is_file():
+            raise RuntimeError('browse failed or recording absent; inspect browse_process and recording')
         http_events = [json.loads(line) for line in client_out.splitlines() if line.startswith('{')]
         replay_a = run('cmd/moondiscover/moondiscover', 'replay', '--file', str(trace))
         replay_b = run('cmd/moondiscover/moondiscover', 'replay', '--file', str(trace))
@@ -150,7 +188,7 @@ def main():
                       trace_sha256=hashlib.sha256(trace.read_bytes()).hexdigest(),
                       exit_codes={'browse': browse.returncode, 'http': client.returncode,
                                   'doctor': doctor.returncode, 'cancel': cancel.returncode},
-                      stderr={'browse': browse.stderr.read(), 'http': client_err,
+                      stderr={'browse': report['browse_process']['stderr'], 'http': client_err,
                               'doctor': doctor.stderr, 'cancel': cancel.stderr})
         report['checks'] = {
             'independent_avahi_service_resolved': got_resolution,
@@ -172,6 +210,8 @@ def main():
             if child.poll() is None:
                 child.kill()
                 child.wait()
+        if 'browse_process' not in report:
+            save_browse_result()
         if group is not None:
             try:
                 group.Free()
@@ -182,7 +222,9 @@ def main():
         server_thread.join(timeout=2)
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(json.dumps(report, indent=2, ensure_ascii=False) + '\n', encoding='utf-8')
-    passed = len(report['checks']) == 8 and all(report['checks'].values()) and 'error' not in report and 'cleanup_error' not in report
+    passed = (len(report['checks']) == 8 and all(report['checks'].values())
+              and 'error' not in report and 'cleanup_error' not in report
+              and not reader_errors and not stdout_truncated)
     print(json.dumps({'passed': passed, 'checks': report['checks'], 'error': report.get('error')}))
     return 0 if passed else 1
 
