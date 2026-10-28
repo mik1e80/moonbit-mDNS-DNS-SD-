@@ -147,7 +147,17 @@ pub fn RecordCache::ingest(
       raise CapacityExceeded
     }
     next.revision += 1
-    let records = message.records.filter(supported)
+    // PTRs in this DNS-SD cache represent shared membership. Ignore a sender's
+    // invalid flush bit both for cache eviction and subsequent query scheduling.
+    let records = message.records
+      .filter(supported)
+      .map(record => {
+        if record.rr_type == 12 && record.cache_flush {
+          { ..record, cache_flush: false, }
+        } else {
+          record
+        }
+      })
     // Apply flush marks to the old set, then rescue every member in this packet.
     // Recently received members survive bursts split across multiple packets.
     next.entries = next.entries.map(entry => {
