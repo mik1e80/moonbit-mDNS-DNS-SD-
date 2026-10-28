@@ -141,14 +141,9 @@ pub fn Replay::step_line(self : Replay, line : String) -> Array[Json] raise {
   if kind != "config" {
     self.started = true
   }
-  while self.engine.poll_event() is Some(event) {
-    let json = event_json(event)
-    if json is Json::Object(fields) {
-      fields["at_ms"] = Json(at.to_double())
-    }
-    output.push(json)
-  }
+  self.drain_events(output, at)
   while self.engine.poll_outbound() is Some(packet) {
+    self.drain_events(output, at)
     output.push(
       Json::object({
         "event": Json("outbound"),
@@ -159,7 +154,23 @@ pub fn Replay::step_line(self : Replay, line : String) -> Array[Json] raise {
       }),
     )
   }
+  self.drain_events(output, at)
   output
+}
+
+///|
+fn Replay::drain_events(
+  self : Replay,
+  output : Array[Json],
+  at : Int64,
+) -> Unit {
+  while self.engine.poll_event() is Some(event) {
+    let json = event_json(event)
+    if json is Json::Object(fields) {
+      fields["at_ms"] = Json(at.to_double())
+    }
+    output.push(json)
+  }
 }
 
 ///|
