@@ -63,7 +63,7 @@ Native 包 `mik1e80/dnssd/src/native` 的 `Browser` 连接系统 socket 和时�
 
 缓存支持 TTL、goodbye 的一秒宽限、cache-flush 的近期分包保护和范围隔离；main 将 DNS-SD PTR 作为共享记录接纳，忽略异常 flush 位，并优先保留已公布且仍有效的服务。子类型通过 `_printer._sub._http._tcp.local.` 这样的名称订阅，返回基础服务实例。
 
-0.1.0 的 Known-Answer 为单包；main 可编码最多 64 包的连续序列，首包携带问题，后续包仅携带答案，最后一包清除 TC。调用方须连续取尽并发送，再改变引擎输入；中断会丢弃剩余分包并诊断。未知或超出上限的序列仍会明确拒绝。
+0.1.0 的 Known-Answer 为单包；main 可编码最多 64 包、16383 条答案的连续序列，实际容量还受每包 9000 字节约束。首包携带问题，后续包仅携带答案，最后一包清除 TC。调用方须连续取尽并发送，再改变引擎输入；中断会丢弃剩余分包并诊断。wire 编码器超限会报错；Engine 会保留合法问题、发送不带 Known Answers 的普通 QM，并输出 `known_answer_limit`。问题自身无效则输出 `query_invalid`。回放在当前帧返回这些诊断。
 
 最新同批中的多个冲突 SRV/TXT 保持未完成状态，尚无完整 SRV 优先级/权重选择。未实现发布者、自动重命名、NSEC 负缓存、跨子网、IPv6 组播或接口自动切换。
 
