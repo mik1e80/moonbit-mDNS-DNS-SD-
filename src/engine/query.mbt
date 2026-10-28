@@ -196,13 +196,25 @@ pub fn Engine::poll_outbound(self : Engine) -> Outbound? {
       }
     }
     let packets = @wire.query_packets(q.name, q.rr_type, answers) catch {
-      _ => {
+      encoding_error => {
+        let plain = @wire.qm_query(q.name, q.rr_type) catch {
+          question_error => {
+            self.emit(
+              Diagnostic(
+                "query_invalid",
+                "question rejected: \{question_error}",
+              ),
+            )
+            continue
+          }
+        }
         self.emit(
           Diagnostic(
-            "known_answer_limit", "question withheld; known-answer burst exceeds configured bounds",
+            "known_answer_limit",
+            "known answers omitted; sending plain QM: \{encoding_error}",
           ),
         )
-        continue
+        [plain]
       }
     }
     for bytes in packets {
