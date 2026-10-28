@@ -119,6 +119,8 @@ fn known_record(
 ///|
 /// RFC 6762 7.2: question in the first packet, answer-only continuations,
 /// TC on every packet except the last. Caller sends the returned burst together.
+/// At most `max_packets * 256 - 1` answers (16383 by default); byte limits
+/// can reduce this capacity. An error never returns a partial burst.
 pub fn query_packets(
   name : @model.DnsName,
   rr_type : Int32,
@@ -129,9 +131,11 @@ pub fn query_packets(
   guard max_size >= 512 &&
     max_size <= 9000 &&
     max_packets > 0 &&
-    max_packets <= 64 &&
-    answers.length() <= 16384 else {
+    max_packets <= 64 else {
     raise Malformed("invalid known-answer burst bounds")
+  }
+  guard answers.length() <= max_packets * 256 - 1 else {
+    raise Malformed("known-answer count exceeds packet budget")
   }
   let result : Array[Bytes] = []
   let mut out = qm_query(name, rr_type).to_array()
@@ -146,7 +150,10 @@ pub fn query_packets(
   for record in answers {
     let data = known_record(name, rr_type, record)
     if out.length() + data.length() > max_size || count >= capacity {
-      guard count > 0 && result.length() + 1 < max_packets else {
+      guard count > 0 else {
+        raise Malformed("one known answer exceeds packet size")
+      }
+      guard result.length() + 1 < max_packets else {
         raise Malformed("known-answer burst exceeds configured bounds")
       }
       result.push(finish(out, count, true))
