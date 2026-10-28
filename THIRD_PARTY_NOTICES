@@ -21,6 +21,9 @@ Independent test tools (not production runtime dependencies; no source copied):
   https://github.com/python-zeroconf/python-zeroconf
 - ifaddr 0.2.0, MIT. https://github.com/pydron/ifaddr
   Installed only into the local test virtual environment via requirements.txt.
+- Avahi 0.8 daemon: independent Linux interoperability counterpart, installed
+  from Ubuntu packages in an ephemeral runner, not vendored or linked here.
+  Its separately distributed source and licensing: https://github.com/avahi/avahi
 
 fixtures/ contains responses from our own synthetic test service. See
 fixtures/README.md for packet provenance and hashes.

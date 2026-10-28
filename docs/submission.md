@@ -1,6 +1,6 @@
 # MoonDiscover 项目说明
 
-仓库：[mik1e80/moonbit-mDNS-DNS-SD-](https://github.com/mik1e80/moonbit-mDNS-DNS-SD-)。模块名：`mik1e80/dnssd`。许可：Apache-2.0。状态：2026-10-24，已发布 0.1.0；不宣称已完成原实施计划的所有平台与 RFC 验收。
+仓库：[mik1e80/moonbit-mDNS-DNS-SD-](https://github.com/mik1e80/moonbit-mDNS-DNS-SD-)。模块名：`mik1e80/dnssd`。许可：Apache-2.0。状态：2026-10-28，已发布 0.1.0；main 为 0.2.0-dev，含尚未发布的新功能和修复。所有能力按版本与证据区分，不宣称完整 RFC 或所有平台验收。
 
 ## 解决的问题
 
@@ -22,10 +22,11 @@ MoonDiscover 用 MoonBit 实现发现所需的报文、缓存、查询与状态�
 
 - 原始标签字节与二进制 TXT，保留实例内点、flag/empty、重复键语义。
 - 范围隔离的 TTL 缓存、goodbye/cache-flush 宽限、部分与完整服务、连续生命周期事件。
-- QM 查询抖动、退避、TTL 刷新、单包 Known-Answer、指定实例解析超时与取消。
+- QM 查询抖动、退避、TTL 刷新、Known-Answer、指定实例解析超时与取消；多包扩展按 main 的边界单独列出。
 - Native Browser、四个 CLI 命令、实时 JSONL、原始报文录制和固定种子确定性回放。
 - 使用发现端点的 HTTP 示例，未通过 Python 发现库代替 MoonBit 内部逻辑。
 - 按实际功能与修复逐步提交的 Git 历史、固定版本工具链和轻量 CI。
+- main 新增子类型浏览与有界多包 Known-Answer，已分别验证成员筛选、身份复用、TC/问题位置/答案完整性与中途取消；专项实网互操作仍待补。
 
 ## 演示与证据
 
@@ -35,6 +36,8 @@ MoonDiscover 用 MoonBit 实现发现所需的报文、缓存、查询与状态�
 
 ## 支持范围与后续工作
 
-当前 Windows 证据来自同一台机器上的独立进程，尚无第二设备、Avahi 或 Linux 实网结果；Linux Native 已有 CI 编译。实时网络限定 IPv4 QM 组播，单播接收明确排除。未实现发布者、IPv6 组播、服务子类型、NSEC 负缓存、多包 Known-Answer 和完整 SRV 优先级/权重选择。
+Windows 证据来自同机独立 zeroconf 进程。main 另有[同 Linux VM 的 Avahi 0.8 实网报告](evidence/linux-avahi-20261028.json)，发现、HTTP、更新、goodbye、取消与回放共八项通过；它不回填为已发布 0.1.0 包的 Linux 验证。尚无第二设备、Bonjour 或长时间实网运行证据。
+
+实时传输仍为 IPv4 QM 组播，单播接收排除。未实现发布者、IPv6 组播、NSEC 负缓存、自动接口切换与完整 SRV 选择。main 的容量和异常 PTR 防御修复已加入回归；版本状态和剩余限制见 [SCOPE.md](SCOPE.md)。
 
 Mooncakes 0.1.0 已实际发布，[源码标签](https://github.com/mik1e80/moonbit-mDNS-DNS-SD-/tree/v0.1.0)对应 `2b922d6`。无 `moon.work` 源码映射的新工程已从注册表安装、运行公开核心 API、编译 Native 并打开/关闭 socket；归档散列及全部 116 个安装文件匹配。详见[发布记录](evidence/release-0.1.0-20261024.json)和[消费记录](evidence/consumer-registry-20261024.json)。

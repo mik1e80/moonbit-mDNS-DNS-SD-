@@ -4,9 +4,13 @@ MoonBit DNS-SD 服务发现库，模块名 `mik1e80/dnssd`，Apache-2.0 许可�
 
 通过 `_http._tcp.local.` 等类型发现实例、主机、端口、二进制 TXT 与地址，持续报告解析、更新、暂不可用和移除。纯 MoonBit 核心负责报文、缓存、聚合、查询调度和确定性回放；Native IPv4 适配层负责指定接口上的实际组播收发。
 
-0.1.0 的 Windows 实现已完成同机独立 `python-zeroconf` 进程发布、MoonBit 主动发现、使用发现的动态端口请求 HTTP、TXT 更新、goodbye 移除、异步取消释放和录制回放的闭环。[实网证据](docs/evidence/windows-live-20261024.json)对应源提交 `f2baff7`。Linux 目前只有 Native 编译证据；尚无第二设备或 Linux 实网证据。实际发布与包消费结果见[验证记录](docs/verification.md)。
+已发布的 **0.1.0** 与当前 **main（0.2.0-dev，未发布）** 分开维护。0.1.0 的 Windows 同机独立 `python-zeroconf` 进程完成了发现、动态端口 HTTP、TXT 更新、goodbye、取消与回放闭环；[Windows 报告](docs/evidence/windows-live-20261024.json)对应 `f2baff7`。main 另有 [Linux/Avahi 实网报告](docs/evidence/linux-avahi-20261028.json)，对应 `a8703be` 的干净工作树，八项检查通过。两者都不代表第二设备互通。
 
-已发布到 Mooncakes。在消费工程声明固定版本：
+main 新增子类型浏览、有界多包 Known-Answer、逻辑状态观测和名称比较优化，并修复服务容量导致的错误移除及异常 PTR cache-flush。新增协议能力已有针对性核心测试；现有一般实网闭环不自动构成它们的专项互操作证据。版本与验证边界见[支持矩阵](docs/SCOPE.md)。
+
+Mooncakes 当前已发布版本为 0.1.0。在消费工程声明固定版本：
+
+这个安装命令取得的是 0.1.0，不包含本轮 main 的容量与 PTR 修复。
 
 ```text
 moon add mik1e80/dnssd@0.1.0
@@ -57,7 +61,11 @@ Native 包 `mik1e80/dnssd/src/native` 的 `Browser` 连接系统 socket 和时�
 
 实时传输限定为显式选择接口的 IPv4 QM 组播，接纳源端口 5353、目标 `224.0.0.251`、所选入站接口的响应。单播接收已明确排除。可解码 AAAA，不代表支持 IPv6 组播。
 
-缓存支持 TTL、goodbye 的一秒宽限、cache-flush 的近期分包保护和范围隔离；查询支持初始抖动、指数退避、TTL 刷新和有界单包 Known-Answer。最新同批中的多个冲突 SRV/TXT 会保留未完成状态，尚无完整 SRV 优先级/权重选择。未实现发布者、自动重命名、服务子类型、NSEC 负缓存、跨子网、接口自动切换或多包 Known-Answer。
+缓存支持 TTL、goodbye 的一秒宽限、cache-flush 的近期分包保护和范围隔离；main 将 DNS-SD PTR 作为共享记录接纳，忽略异常 flush 位，并优先保留已公布且仍有效的服务。子类型通过 `_printer._sub._http._tcp.local.` 这样的名称订阅，返回基础服务实例。
+
+0.1.0 的 Known-Answer 为单包；main 可编码最多 64 包的连续序列，首包携带问题，后续包仅携带答案，最后一包清除 TC。调用方须连续取尽并发送，再改变引擎输入；中断会丢弃剩余分包并诊断。未知或超出上限的序列仍会明确拒绝。
+
+最新同批中的多个冲突 SRV/TXT 保持未完成状态，尚无完整 SRV 优先级/权重选择。未实现发布者、自动重命名、NSEC 负缓存、跨子网、IPv6 组播或接口自动切换。
 
 ## 文档与验证
 

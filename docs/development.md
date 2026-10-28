@@ -55,11 +55,11 @@ CLI 手工录制为 `browse` 或 `resolve` 添加 `--record path.jsonl`，正常
 仓库外消费验证脚本会新建独立临时工程，只导入公开包，不复制库源码：
 
 ```powershell
-python tests/interop/consumer_smoke.py --mode local --interface 192.168.1.10 --output .tools/consumer-local.json
+python tests/interop/consumer_smoke.py --mode local --version 0.2.0-dev --interface 192.168.1.10 --output .tools/consumer-local.json
 ```
 
 local 模式通过 `moon.work` 指向本地源码，检查 JS 调用、Native 编译和可选 socket 打开/关闭。实际发布后，使用 `--mode registry --version 0.1.0` 验证注册表包；该模式不生成工作区覆盖。两种模式的结果分别记录，失败会返回非零。
 
-根包是无 socket 的纯核心；真实网络入口为 `mik1e80/dnssd/src/native`。CI 使用固定版本做 JS 核心冒烟、Windows/Linux Native 编译，Windows 另运行离线二进制契约测试。CI 不运行真实局域网实验。
+根包是无 socket 的纯核心；真实网络入口为 `mik1e80/dnssd/src/native`。默认轻量 CI 使用固定版本做 JS 冒烟、Windows/Linux Native 编译和离线契约验证；独立的 `linux-interop.yml` 则在相关路径变更或手动触发时，运行同 VM 的真实 Avahi IPv4 组播闭环，保留逐项报告。
 
-平台结论依 [验证记录](verification.md)；Linux 编译成功不能代替 Linux 实网互通。原始实施计划不作为“所有能力已完成”的证明。
+Linux 实验需要 Avahi 守护进程、D-Bus 与系统 python3-dbus，使用 `/usr/bin/python3 tests/interop/avahi_smoke.py --output .tools/avahi-linux.json`。脚本会创建录制目录，失败时保留浏览器和文件状态。平台结论依 [验证记录](verification.md)；同 VM 不代表第二设备，原始计划也不作为全部完成的证明。
