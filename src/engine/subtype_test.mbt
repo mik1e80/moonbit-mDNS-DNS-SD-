@@ -12,6 +12,9 @@ test "smoke: subtype queries keep base instance identity and filter membership" 
   engine.ingest_message(message(records), "wifi", 200)
   assert_true(engine.poll_event() is None)
   let membership : @wire.Record = { ..records[0], name: subtype, }
+  let plain_peer = capacity_fixture("_http._tcp.local.", "plain-peer", 8090)
+  engine.ingest_message(message(plain_peer), "wifi", 250)
+  assert_true(engine.poll_event() is None)
   engine.ingest_message(message([membership]), "wifi", 300)
   assert_true(engine.poll_event() is Some(@engine.Seen(_)))
   guard engine.poll_event() is Some(@engine.Resolved(snapshot)) else {
@@ -19,6 +22,8 @@ test "smoke: subtype queries keep base instance identity and filter membership" 
   }
   assert_true(snapshot.service_type.same_name(records[0].name))
   assert_true(snapshot.instance.same_name(records[1].name))
+  assert_eq(engine.snapshots().length(), 1)
+  assert_false(engine.snapshots().any(s => s.instance.same_name(plain_peer[1].name)))
   engine.ingest_message(message([{ ..membership, ttl: 0, }]), "wifi", 400)
   engine.advance(1400)
   assert_true(engine.poll_event() is Some(@engine.Removed(_, "goodbye")))

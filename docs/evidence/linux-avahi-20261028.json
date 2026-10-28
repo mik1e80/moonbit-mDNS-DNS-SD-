@@ -1,0 +1,266 @@
+{
+  "date": "2026-10-28T06:43:03.944229+00:00",
+  "source_commit": "a8703bec8acfa70ab2804e8b5859ee4f6eaacb93",
+  "source_dirty": false,
+  "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+  "publisher": "Avahi daemon via D-Bus",
+  "interface": "eth0",
+  "interface_index": 2,
+  "interface_ipv4": "10.1.1.19",
+  "demo": "moondiscover-4c8bd257baae",
+  "cli_sha256": "c00070360aca96c75c9ca221b417c3d1201c4cbdb9b0e5f127848294ad43b403",
+  "limits": [
+    "same Linux VM using an independent Avahi daemon",
+    "IPv4 multicast; not second-device interoperability"
+  ],
+  "checks": {
+    "independent_avahi_service_resolved": true,
+    "discovered_dynamic_port_used_for_http": true,
+    "txt_update_event": true,
+    "goodbye_removed_event": true,
+    "all_processes_exit_zero": true,
+    "async_cancellation_closed_browser": true,
+    "recorded_replay_deterministic": true,
+    "live_and_replay_service_events_match": true
+  },
+  "ci_run_url": "https://github.com/mik1e80/moonbit-mDNS-DNS-SD-/actions/runs/40645501957",
+  "avahi_version": "avahi 0.8",
+  "publisher_hostname": "runnervmtai0g.local",
+  "browse_process": {
+    "exit_code": 0,
+    "stdout": "{\"event\":\"seen\",\"service\":{\"scope\":\"ipv4:2:47717\",\"service_type\":\"_http._tcp.local.\",\"instance\":\"moondiscover-4c8bd257baae._http._tcp.local.\",\"instance_label\":\"moondiscover-4c8bd257baae\",\"target\":\"runnervmtai0g.local.\",\"port\":42129,\"txt_entries_hex\":[\"64656d6f3d6d6f6f6e646973636f7665722d346338626432353762616165\",\"70686173653d6f6e65\",\"62696e6172793d00ff\"],\"addresses\":[\"10.1.1.19\",\"fe80:0:0:0:20d:3aff:fe94:27b2\"],\"complete\":true,\"missing\":[],\"remaining_ttl_ms\":120000},\"reason\":null}\n{\"event\":\"resolved\",\"service\":{\"scope\":\"ipv4:2:47717\",\"service_type\":\"_http._tcp.local.\",\"instance\":\"moondiscover-4c8bd257baae._http._tcp.local.\",\"instance_label\":\"moondiscover-4c8bd257baae\",\"target\":\"runnervmtai0g.local.\",\"port\":42129,\"txt_entries_hex\":[\"64656d6f3d6d6f6f6e646973636f7665722d346338626432353762616165\",\"70686173653d6f6e65\",\"62696e6172793d00ff\"],\"addresses\":[\"10.1.1.19\",\"fe80:0:0:0:20d:3aff:fe94:27b2\"],\"complete\":true,\"missing\":[],\"remaining_ttl_ms\":120000},\"reason\":null}\n{\"event\":\"updated\",\"service\":{\"scope\":\"ipv4:2:47717\",\"service_type\":\"_http._tcp.local.\",\"instance\":\"moondiscover-4c8bd257baae._http._tcp.local.\",\"instance_label\":\"moondiscover-4c8bd257baae\",\"target\":\"runnervmtai0g.local.\",\"port\":42129,\"txt_entries_hex\":[\"64656d6f3d6d6f6f6e646973636f7665722d346338626432353762616165\",\"70686173653d74776f\",\"62696e6172793d00ff\"],\"addresses\":[\"10.1.1.19\",\"fe80:0:0:0:20d:3aff:fe94:27b2\"],\"complete\":true,\"missing\":[],\"remaining_ttl_ms\":119807},\"reason\":\"response\"}\n{\"event\":\"removed\",\"service\":{\"scope\":\"ipv4:2:47717\",\"service_type\":\"_http._tcp.local.\",\"instance\":\"moondiscover-4c8bd257baae._http._tcp.local.\",\"instance_label\":\"moondiscover-4c8bd257baae\",\"target\":\"runnervmtai0g.local.\",\"port\":42129,\"txt_entries_hex\":[\"64656d6f3d6d6f6f6e646973636f7665722d346338626432353762616165\",\"70686173653d74776f\",\"62696e6172793d00ff\"],\"addresses\":[\"10.1.1.19\",\"fe80:0:0:0:20d:3aff:fe94:27b2\"],\"complete\":false,\"missing\":[],\"remaining_ttl_ms\":0},\"reason\":\"goodbye\"}\n{\"event\":\"recorded\",\"file\":\"/home/runner/work/moonbit-mDNS-DNS-SD-/moonbit-mDNS-DNS-SD-/.tools/moondiscover-4c8bd257baae.jsonl\",\"frames\":1978}\n{\"event\":\"summary\",\"seen_events\":1,\"resolved_events\":1,\"duration_ms\":10000,\"observation\":\"services_observed\"}\n",
+    "stdout_truncated": false,
+    "stderr": "",
+    "reader_errors": []
+  },
+  "recording": {
+    "exists": true,
+    "bytes": 110118,
+    "sha256": "96ad53c5a88e14fe1ea40a40cf343472c93cb111538a829335f1de1a3a2c007c"
+  },
+  "timeline": [
+    {
+      "event": "seen",
+      "service": {
+        "scope": "ipv4:2:47717",
+        "service_type": "_http._tcp.local.",
+        "instance": "moondiscover-4c8bd257baae._http._tcp.local.",
+        "instance_label": "moondiscover-4c8bd257baae",
+        "target": "runnervmtai0g.local.",
+        "port": 42129,
+        "txt_entries_hex": [
+          "64656d6f3d6d6f6f6e646973636f7665722d346338626432353762616165",
+          "70686173653d6f6e65",
+          "62696e6172793d00ff"
+        ],
+        "addresses": [
+          "10.1.1.19",
+          "fe80:0:0:0:20d:3aff:fe94:27b2"
+        ],
+        "complete": true,
+        "missing": [],
+        "remaining_ttl_ms": 120000
+      },
+      "reason": null,
+      "observed_ms": 1158
+    },
+    {
+      "event": "resolved",
+      "service": {
+        "scope": "ipv4:2:47717",
+        "service_type": "_http._tcp.local.",
+        "instance": "moondiscover-4c8bd257baae._http._tcp.local.",
+        "instance_label": "moondiscover-4c8bd257baae",
+        "target": "runnervmtai0g.local.",
+        "port": 42129,
+        "txt_entries_hex": [
+          "64656d6f3d6d6f6f6e646973636f7665722d346338626432353762616165",
+          "70686173653d6f6e65",
+          "62696e6172793d00ff"
+        ],
+        "addresses": [
+          "10.1.1.19",
+          "fe80:0:0:0:20d:3aff:fe94:27b2"
+        ],
+        "complete": true,
+        "missing": [],
+        "remaining_ttl_ms": 120000
+      },
+      "reason": null,
+      "observed_ms": 1158
+    },
+    {
+      "event": "updated",
+      "service": {
+        "scope": "ipv4:2:47717",
+        "service_type": "_http._tcp.local.",
+        "instance": "moondiscover-4c8bd257baae._http._tcp.local.",
+        "instance_label": "moondiscover-4c8bd257baae",
+        "target": "runnervmtai0g.local.",
+        "port": 42129,
+        "txt_entries_hex": [
+          "64656d6f3d6d6f6f6e646973636f7665722d346338626432353762616165",
+          "70686173653d74776f",
+          "62696e6172793d00ff"
+        ],
+        "addresses": [
+          "10.1.1.19",
+          "fe80:0:0:0:20d:3aff:fe94:27b2"
+        ],
+        "complete": true,
+        "missing": [],
+        "remaining_ttl_ms": 119807
+      },
+      "reason": "response",
+      "observed_ms": 1351
+    },
+    {
+      "event": "removed",
+      "service": {
+        "scope": "ipv4:2:47717",
+        "service_type": "_http._tcp.local.",
+        "instance": "moondiscover-4c8bd257baae._http._tcp.local.",
+        "instance_label": "moondiscover-4c8bd257baae",
+        "target": "runnervmtai0g.local.",
+        "port": 42129,
+        "txt_entries_hex": [
+          "64656d6f3d6d6f6f6e646973636f7665722d346338626432353762616165",
+          "70686173653d74776f",
+          "62696e6172793d00ff"
+        ],
+        "addresses": [
+          "10.1.1.19",
+          "fe80:0:0:0:20d:3aff:fe94:27b2"
+        ],
+        "complete": false,
+        "missing": [],
+        "remaining_ttl_ms": 0
+      },
+      "reason": "goodbye",
+      "observed_ms": 2366
+    }
+  ],
+  "http_port": 42129,
+  "http_requests": [
+    "/moondiscover-demo"
+  ],
+  "http_client_events": [
+    {
+      "event": "http_verified",
+      "instance": "moondiscover-4c8bd257baae._http._tcp.local.",
+      "discovered_port": 42129,
+      "body": "moondiscover-4c8bd257baae"
+    }
+  ],
+  "replay_service_events": [
+    {
+      "event": "seen",
+      "service": {
+        "scope": "ipv4:2:47717",
+        "service_type": "_http._tcp.local.",
+        "instance": "moondiscover-4c8bd257baae._http._tcp.local.",
+        "instance_label": "moondiscover-4c8bd257baae",
+        "target": "runnervmtai0g.local.",
+        "port": 42129,
+        "txt_entries_hex": [
+          "64656d6f3d6d6f6f6e646973636f7665722d346338626432353762616165",
+          "70686173653d6f6e65",
+          "62696e6172793d00ff"
+        ],
+        "addresses": [
+          "10.1.1.19",
+          "fe80:0:0:0:20d:3aff:fe94:27b2"
+        ],
+        "complete": true,
+        "missing": [],
+        "remaining_ttl_ms": 120000
+      },
+      "reason": null
+    },
+    {
+      "event": "resolved",
+      "service": {
+        "scope": "ipv4:2:47717",
+        "service_type": "_http._tcp.local.",
+        "instance": "moondiscover-4c8bd257baae._http._tcp.local.",
+        "instance_label": "moondiscover-4c8bd257baae",
+        "target": "runnervmtai0g.local.",
+        "port": 42129,
+        "txt_entries_hex": [
+          "64656d6f3d6d6f6f6e646973636f7665722d346338626432353762616165",
+          "70686173653d6f6e65",
+          "62696e6172793d00ff"
+        ],
+        "addresses": [
+          "10.1.1.19",
+          "fe80:0:0:0:20d:3aff:fe94:27b2"
+        ],
+        "complete": true,
+        "missing": [],
+        "remaining_ttl_ms": 120000
+      },
+      "reason": null
+    },
+    {
+      "event": "updated",
+      "service": {
+        "scope": "ipv4:2:47717",
+        "service_type": "_http._tcp.local.",
+        "instance": "moondiscover-4c8bd257baae._http._tcp.local.",
+        "instance_label": "moondiscover-4c8bd257baae",
+        "target": "runnervmtai0g.local.",
+        "port": 42129,
+        "txt_entries_hex": [
+          "64656d6f3d6d6f6f6e646973636f7665722d346338626432353762616165",
+          "70686173653d74776f",
+          "62696e6172793d00ff"
+        ],
+        "addresses": [
+          "10.1.1.19",
+          "fe80:0:0:0:20d:3aff:fe94:27b2"
+        ],
+        "complete": true,
+        "missing": [],
+        "remaining_ttl_ms": 119807
+      },
+      "reason": "response"
+    },
+    {
+      "event": "removed",
+      "service": {
+        "scope": "ipv4:2:47717",
+        "service_type": "_http._tcp.local.",
+        "instance": "moondiscover-4c8bd257baae._http._tcp.local.",
+        "instance_label": "moondiscover-4c8bd257baae",
+        "target": "runnervmtai0g.local.",
+        "port": 42129,
+        "txt_entries_hex": [
+          "64656d6f3d6d6f6f6e646973636f7665722d346338626432353762616165",
+          "70686173653d74776f",
+          "62696e6172793d00ff"
+        ],
+        "addresses": [
+          "10.1.1.19",
+          "fe80:0:0:0:20d:3aff:fe94:27b2"
+        ],
+        "complete": false,
+        "missing": [],
+        "remaining_ttl_ms": 0
+      },
+      "reason": "goodbye"
+    }
+  ],
+  "trace_sha256": "96ad53c5a88e14fe1ea40a40cf343472c93cb111538a829335f1de1a3a2c007c",
+  "exit_codes": {
+    "browse": 0,
+    "http": 0,
+    "doctor": 0,
+    "cancel": 0
+  },
+  "stderr": {
+    "browse": "",
+    "http": "",
+    "doctor": "",
+    "cancel": ""
+  }
+}
