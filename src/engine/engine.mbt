@@ -384,17 +384,26 @@ fn Engine::reconcile(
 ) -> Unit {
   let current : Array[ServiceSnapshot] = []
   let mut limited = false
+  for old in self.services {
+    if self.retained_snapshot(old) is Some(snapshot) {
+      current.push(snapshot)
+    }
+  }
   for sub in self.interests {
     if sub.instance is Some(instance) {
       if !self.cache.records(sub.scope, instance, 33).is_empty() ||
         !self.cache.records(sub.scope, instance, 16).is_empty() {
-        let snapshot = self.build_snapshot(sub, 9223372036854775807L, instance)
-        if !current.any(s => same_identity(s, snapshot)) {
-          if current.length() < self.service_capacity {
-            current.push(snapshot)
-          } else {
-            limited = true
-          }
+        if current.any(s => {
+            s.scope == sub.scope &&
+            s.service_type.same_name(sub.service_type) &&
+            s.instance.same_name(instance)
+          }) {
+          continue
+        }
+        if current.length() >= self.service_capacity {
+          limited = true
+        } else {
+          current.push(self.build_snapshot(sub, 9223372036854775807L, instance))
         }
       }
       continue
@@ -409,15 +418,18 @@ fn Engine::reconcile(
           )
           continue
         }
-        let snapshot = self.build_snapshot(sub, ptr.expires_at, instance)
-        if current.any(s => same_identity(s, snapshot)) {
+        if current.any(s => {
+            s.scope == sub.scope &&
+            s.service_type.same_name(sub.service_type) &&
+            s.instance.same_name(instance)
+          }) {
           continue
         }
         if current.length() >= self.service_capacity {
           limited = true
           continue
         }
-        current.push(snapshot)
+        current.push(self.build_snapshot(sub, ptr.expires_at, instance))
       }
     }
   }
